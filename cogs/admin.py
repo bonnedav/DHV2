@@ -23,40 +23,40 @@ class Admin:
 
     @commands.command(hidden=True)
     @checks.is_owner()
-    async def load(self, *, module: str):
+    async def load(self, ctx, *, module: str):
         """Loads a module."""
         try:
             self.bot.load_extension(module)
         except Exception as e:
-            await self.bot.say('\N{PISTOL}')
-            await self.bot.say('{}: {}'.format(type(e).__name__, e))
+            await ctx.send('\N{PISTOL}')
+            await ctx.send('{}: {}'.format(type(e).__name__, e))
         else:
-            await self.bot.say('\N{OK HAND SIGN}')
+            await ctx.send('\N{OK HAND SIGN}')
 
     @commands.command(hidden=True)
     @checks.is_owner()
-    async def unload(self, *, module: str):
+    async def unload(self, ctx, *, module: str):
         """Unloads a module."""
         try:
             self.bot.unload_extension(module)
         except Exception as e:
-            await self.bot.say('\N{PISTOL}')
-            await self.bot.say('{}: {}'.format(type(e).__name__, e))
+            await ctx.send('\N{PISTOL}')
+            await ctx.send('{}: {}'.format(type(e).__name__, e))
         else:
-            await self.bot.say('\N{OK HAND SIGN}')
+            await ctx.send('\N{OK HAND SIGN}')
 
     @commands.command(name='reload_cog', hidden=True)
     @checks.is_owner()
-    async def _reload(self, *, module: str):
+    async def _reload(self, ctx, *, module: str):
         """Reloads a module."""
         try:
             self.bot.unload_extension(module)
             self.bot.load_extension(module)
         except Exception as e:
-            await self.bot.say('\N{PISTOL}')
-            await self.bot.say('{}: {}'.format(type(e).__name__, e))
+            await ctx.send('\N{PISTOL}')
+            await ctx.send('{}: {}'.format(type(e).__name__, e))
         else:
-            await self.bot.say('\N{OK HAND SIGN}')
+            await ctx.send('\N{OK HAND SIGN}')
 
     @commands.command(pass_context=True, hidden=True)
     @checks.is_owner()
@@ -70,7 +70,7 @@ class Admin:
             'bot'    : self.bot,
             'ctx'    : ctx,
             'message': ctx.message,
-            'server' : ctx.message.server,
+            'server' : ctx.message.guild,
             'channel': ctx.message.channel,
             'author' : ctx.message.author
         }
@@ -100,14 +100,14 @@ class Admin:
     @checks.is_owner()
     async def dbtable(self, ctx):
         if not prefs.getPref(ctx.message.server, "global_scores"):
-            await comm.message_user(ctx.message, str(ctx.message.server.id) + "-" + str(ctx.message.channel.id))
+            await comm.message_user(ctx.message, str(ctx.message.guild.id) + "-" + str(ctx.message.channel.id))
         else:
-            await comm.message_user(ctx.message, str(ctx.message.server.id))
+            await comm.message_user(ctx.message, str(ctx.message.guild.id))
 
     @commands.command(pass_context=True)
     @checks.is_owner()
     async def serverlist(self, ctx, passed_prefs: str = "", maxservs: int = None):
-        language = prefs.getPref(ctx.message.server, "language")
+        language = prefs.getPref(ctx.message.guild, "language")
 
         x = PrettyTable()
         args_ = passed_prefs.split(" ")
@@ -115,13 +115,13 @@ class Admin:
         x.reversesort = True
 
         tmp = await self.bot.send_message(ctx.message.channel, str(ctx.message.author.mention) + _(" > En cours", language))
-        servers = JSONloadFromDisk("channels.json", default="{}")
+        servers = JSONloadFromDisk("channels.json")
 
 
         i = 0
         lu = 0
 
-        slist = sorted(list(self.bot.servers), key=lambda s: int(s.member_count), reverse=True)[:maxservs]
+        slist = sorted(list(self.bot.guilds), key=lambda s: int(s.member_count), reverse=True)[:maxservs]
         total = len(slist)
 
         for server in list(slist):
@@ -178,7 +178,7 @@ class Admin:
         total_members_lost = 0
         servers = JSONloadFromDisk("channels.json")
 
-        for server in list(self.bot.servers):
+        for server in list(self.bot.guilds):
 
             try:
                 if len(servers[server.id]["channels"]) == 0:
@@ -243,7 +243,7 @@ class Admin:
     async def send_message(self, ctx, server_name: str, channel_name: str, *, message: str):
         language = prefs.getPref(ctx.message.server, "language")
 
-        await self.bot.send_message(discord.utils.find(lambda m: m.name == channel_name, discord.utils.find(lambda m: m.name == server_name or str(m.id) == str(server_name), self.bot.servers).channels), message)
+        await self.bot.send_message(discord.utils.find(lambda m: m.name == channel_name, discord.utils.find(lambda m: m.name == server_name or str(m.id) == str(server_name), self.bot.guilds).channels), message)
         await comm.message_user(ctx.message, _("Message ({message}) sent to {server} #{channel} ", language).format(message=message, server=server_name, channel=channel_name))
 
     @commands.command(pass_context=True)
