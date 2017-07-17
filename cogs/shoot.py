@@ -35,7 +35,7 @@ class Shoot:
             return
 
     async def sendBangMessage(self, message: discord.Message, string: str):
-        lag = prefs.getPref(message.server, "bang_lag")
+        lag = prefs.getPref(message.guild, "bang_lag")
         if lag > 0:
             tmp = await self.bot.send_message(message.channel, str(message.author.mention) + " > BANG")
             await asyncio.sleep(lag)
@@ -52,7 +52,7 @@ class Shoot:
         channel = message.channel
         author = message.author
 
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         await self.giveBackIfNeeded(message)
 
         if scores.getStat(channel, author, "mouille") > int(time.time()):  # Water
@@ -126,7 +126,7 @@ class Shoot:
             scores.addToStat(channel, author, "shoots_no_duck", 1)
             return
 
-        if random.randint(1, 100) < prefs.getPref(message.server, "duck_frighten_chance") and scores.getStat(channel, author, "silencieux") < int(time.time()):  # Duck frightened
+        if random.randint(1, 100) < prefs.getPref(message.guild, "duck_frighten_chance") and scores.getStat(channel, author, "silencieux") < int(time.time()):  # Duck frightened
             try:
                 commons.ducks_spawned.remove(current_duck)
                 commons.n_ducks_flew += 1
@@ -151,8 +151,8 @@ class Shoot:
             precision += (100 - precision) / 3
             scores.setStat(channel, author, "sight", sight - 1)
 
-        if random.randint(1, accuracy) > precision * prefs.getPref(message.server, "multiplier_miss_chance") :
-            if random.randint(1, 100) < prefs.getPref(message.server, "chance_to_kill_on_missed"):  # Missed and shot someone
+        if random.randint(1, accuracy) > precision * prefs.getPref(message.guild, "multiplier_miss_chance"):
+            if random.randint(1, 100) < prefs.getPref(message.guild, "chance_to_kill_on_missed"):  # Missed and shot someone
                 scores.addToStat(channel, author, "exp", -3)
                 scores.addToStat(channel, author, "shoots_missed", 1)
                 scores.addToStat(channel, author, "killed_players", 1)
@@ -166,11 +166,11 @@ class Shoot:
                         memberlist.remove(victim)
                         victim = random.choice(memberlist)
 
-                    victim = message.server.get_member(str(victim['id_']))
+                    victim = message.guild.get_member(str(victim['id_']))
 
                 if victim is not author:
                     await self.sendBangMessage(message, _("**BANG**\tYou missed the duck... And shot {player} ! [missed : -1 xp] [hunting accident : -2 xp] [weapon confiscated]", language).format(**{
-                        "player": victim.mention if prefs.getPref(message.server, "killed_mentions") else victim.name
+                        "player": victim.mention if prefs.getPref(message.guild, "killed_mentions") else victim.name
                     }))
                 else:
                     await self.sendBangMessage(message, _("**BANG**\tYou missed the duck... but shot yourself. Turn your weapon a little before shooting the next time, maybe ? [missed : -1 xp] [hunting accident : -2 xp] [weapon confiscated]", language))
@@ -211,8 +211,8 @@ class Shoot:
                 scores.addToStat(channel, author, "shoots_almost_killed", 1)
                 return
 
-            exp = prefs.getPref(message.server, "exp_won_per_duck_killed")
-            exp += prefs.getPref(message.server, "super_ducks_exp_multiplier") * (current_duck["level"] - 1) * prefs.getPref(message.server, "exp_won_per_duck_killed")
+            exp = prefs.getPref(message.guild, "exp_won_per_duck_killed")
+            exp += prefs.getPref(message.guild, "super_ducks_exp_multiplier") * (current_duck["level"] - 1) * prefs.getPref(message.guild, "exp_won_per_duck_killed")
             if scores.getStat(channel, author, "trefle") >= time.time():
                 toadd = scores.getStat(channel, author, "trefle_exp")
                 exp += toadd
@@ -232,9 +232,9 @@ class Shoot:
                 "exp"         : exp,
                 "supercanards": scores.getStat(channel, author, "killed_super_ducks")
             }))
-            if scores.getStat(channel, author, "best_time", default=prefs.getPref(message.server, "time_before_ducks_leave")) > int(now - current_duck["time"]):
+            if scores.getStat(channel, author, "best_time", default=prefs.getPref(message.guild, "time_before_ducks_leave")) > int(now - current_duck["time"]):
                 scores.setStat(channel, author, "best_time", round(now - current_duck["time"], 6))
-            if prefs.getPref(message.server, "users_can_find_objects"):
+            if prefs.getPref(message.guild, "users_can_find_objects"):
                 rand = random.randint(0, 1000)
                 HOUR = 3600
                 DAY = 86400
@@ -287,7 +287,7 @@ class Shoot:
     async def reload(self, ctx):
         await self.giveBackIfNeeded(ctx.message)
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
 
         if scores.getStat(message.channel, message.author, "confisque", default=False):
             await comm.message_user(message, _("Your weapon had been confiscated", language))

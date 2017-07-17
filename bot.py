@@ -48,7 +48,7 @@ HOUR = MINUTE * 60
 DAY = HOUR * 24
 
 def prefix(bot, message):
-    p = prefs.getPref(message.server, "prefix")
+    p = prefs.getPref(message.guild, "prefix")
     return ["DuckHunt", "duckhunt", "dh!", "dh"] + [p]
 
 
@@ -58,17 +58,17 @@ commons.bot = bot
 
 @bot.event
 async def on_command_error(error, ctx):
-    language = prefs.getPref(ctx.message.server, "language")
+    language = prefs.getPref(ctx.message.guild, "language")
     if isinstance(error, commands.NoPrivateMessage):
-        await bot.send_message(ctx.message.author, _(':x: This command cannot be used in private messages.', language))
+        await ctx.message.author.send(_(':x: This command cannot be used in private messages.', language))
     elif isinstance(error, commands.DisabledCommand):
-        await bot.send_message(ctx.message.author, _(':x: Sorry. This command is disabled and cannot be used.', language))
+        await ctx.message.author.send(_(':x: Sorry. This command is disabled and cannot be used.', language))
     elif isinstance(error, commands.CommandInvokeError):
         print('In {0.command.qualified_name}:'.format(ctx), file=sys.stderr)
         traceback.print_tb(error.original.__traceback__)
         print('{0.__class__.__name__}: {0}'.format(error.original), file=sys.stderr)
 
-        myperms = ctx.message.channel.permissions_for(ctx.message.server.me)
+        myperms = ctx.message.channel.permissions_for(ctx.message.guild.me)
         can_send = myperms.add_reactions and myperms.create_instant_invite
         if can_send:
             error_report = _("Send error report ? ", language)
@@ -85,25 +85,33 @@ async def on_command_error(error, ctx):
         if can_send:
             yes = "\N{THUMBS UP SIGN}"
             no = "\N{THUMBS DOWN SIGN}"
-            await bot.add_reaction(msg, yes)
-            await bot.add_reaction(msg, no)
-            res = await bot.wait_for_reaction(emoji=[yes, no], user=ctx.message.author, message=msg, timeout=120)
+            await msg.add_reaction(yes)
+            await msg.add_reaction(no)
+
+            def is_good_reaction(reaction, user):
+                return reaction.author == ctx.message.author and reaction.message == msg and reaction.emoji in [yes, no]
+
+            # La bonne époque : res = await bot.wait_for('reaction_add', emoji=[yes, no], user=ctx.message.author, message=msg, timeout=120)
+            try:
+                res = await bot.wait_for('reaction_add', check=is_good_reaction, timeout=120)
+            except asyncio.TimeoutError:
+                res = None
             if res:
                 reaction, user = res
                 emoji = reaction.emoji
                 if emoji == yes:
 
                     msg = await comm.message_user(ctx.message, _(":anger_right: Creating an invite for the error report...", language))
-                    support_channel = discord.utils.find(lambda c: str(c.id) == '273930986314792960', discord.utils.find(lambda s: str(s.id) == '195260081036591104', bot.servers).channels)
-                    invite = await bot.create_invite(ctx.message.channel, max_uses=5)
+                    support_channel = discord.utils.find(lambda c: c.id == 273930986314792960, discord.utils.find(lambda s: s.id == 195260081036591104, bot.guilds).channels)
+                    invite = await ctx.message.channel.create_invite(max_uses=5)
                     invite = invite.url
-                    await bot.edit_message(msg, _(":anger_right: Sending error report...", language))
+                    await msg.edit(_(":anger_right: Sending error report...", language))
 
-                    await bot.send_message(support_channel, _(":hammer: {date} :hammer:").format(date=int(time.time())))
-                    await bot.send_message(support_channel, await comm.paste(_("{cause}\n\n{tb}").format(cause=error.original.__class__.__name__,
+                    await support_channel.send(_(":hammer: {date} :hammer:").format(date=int(time.time())))
+                    await support_channel.send(await comm.paste(_("{cause}\n\n{tb}").format(cause=error.original.__class__.__name__,
                                                                                                          tb="\n".join(traceback.format_tb(error.original.__traceback__))), "py"))
-                    await bot.send_message(support_channel, invite)
-                    await bot.edit_message(msg, _(":ok: Error message sent, thanks :)", language))
+                    await support_channel.send(invite)
+                    await msg.edit(_(":ok: Error message sent, thanks :)", language))
                     return
             await comm.message_user(ctx.message, _("OK, I won't send an error report", language))
 
@@ -134,9 +142,9 @@ async def on_resumed():
 async def on_command(command, ctx):
     bot.commands_used[command.name] += 1
     await comm.logwithinfos_message(ctx.message, str(command) + " (" + ctx.message.clean_content + ") ")
-    if prefs.getPref(ctx.message.server, "delete_commands") and checks.is_activated_check(ctx.message.channel):
+    if prefs.getPref(ctx.message.guild, "delete_commands") and checks.is_activated_check(ctx.message.channel):
         try:
-            await bot.delete_message(ctx.message)
+            await ctx.message.delete()
         except discord.Forbidden:
             await comm.logwithinfos_ctx(ctx, "Error deleting command : forbidden")
         except discord.NotFound:
@@ -254,7 +262,7 @@ async def mainloop():
                         "shouldwaitto": str(int(canard["time"] + prefs.getPref(canard["channel"].server, "time_before_ducks_leave"))) + (" + " + str(commons.bread[canard["channel"]]) if commons.bread[canard["channel"]] != 0 else "")
                     }))
                     try:
-                        asyncio.ensure_future(bot.send_message(canard["channel"], _(random.choice(commons.canards_bye), language=prefs.getPref(canard["channel"].server, "language"))))
+                        asyncio.ensure_future(canard["channel"].send(_(random.choice(commons.canards_bye), language=prefs.getPref(canard["channel"].server, "language"))))
                     except:
                         pass
                     try:

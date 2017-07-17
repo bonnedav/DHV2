@@ -38,17 +38,17 @@ async def message_user(message, toSend, forcePv=False):
         toSend = await paste(toSend.replace("```", ""), "py")
         # logger.info(_("Message trop long, envoi sur hastebin avec le lien : ") + toSend)
         await logwithinfos_message(message, "Paste envoyé, lien : " + str(toSend))
-    if prefs.getPref(message.guild, "pm_most_messages") or forcePv == True:
+    if prefs.getPref(message.guild, "pm_most_messages") or forcePv:
         try:
-            return await commons.bot.send_message(message.author, toSend)
+            return await message.author.send(toSend)
         except discord.errors.Forbidden:
             try:
-                await commons.bot.send_message(message.channel, str(message.author.mention) + " > 403 Permission denied (can't send private messages to this user)")
+                await message.channel.send(str(message.author.mention) + " > 403 Permission denied (can't send private messages to this user)")
                 await logwithinfos_message(message, "Impossible to send private messages to this user")
             except:
                 await logwithinfos_message(message, "Impossible to send messages in the channel")
     else:
         try:
-            return await commons.bot.send_message(message.channel, str(message.author.mention) + " > " + toSend)
+            return await message.channel.send(str(message.author.mention) + " > " + toSend)
         except:
             await logwithinfos_message(message, "Impossible to send messages in the channel")
