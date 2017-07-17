@@ -6,10 +6,11 @@
 """
 import asyncio
 import datetime
+import os
 import sys
 
-import os
 import psutil
+
 from cogs.utils import commons
 
 CSV_root = os.path.dirname(os.path.realpath(sys.argv[0])) + "/csv/"
@@ -26,7 +27,7 @@ async def csv_write(file, x, y):
 
 async def update_servers():
     x = await get_date()
-    y = len(commons.bot.servers)
+    y = len(commons.bot.guilds)
     await csv_write("servers.csv", x, y)
     commons.logger.debug("Updating server analytics")
 
@@ -46,10 +47,11 @@ async def update_memory():
 
 
 async def update_users():
+    # TODO : Utiliser la liste globale des users
     x = await get_date()
     y = 0
-    for server in commons.bot.servers:
-        for member in server.members:
+    for guild in commons.bot.guilds:
+        for member in guild.members:
             if not member.bot:
                 y += 1
     await csv_write("users.csv", x, y)
