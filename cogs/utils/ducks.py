@@ -29,7 +29,7 @@ async def allCanardsGo():
             logger.exception("Here is why : ")
 
 
-async def planifie(channel_obj: discord.Channel = None):
+async def planifie(channel_obj: discord.ChannelType = None):
     now = int(time.time())
     thisDay = now - (now % 86400)
     seconds_left = 86400 - (now - thisDay)
@@ -85,7 +85,7 @@ async def planifie(channel_obj: discord.Channel = None):
 
 
 async def spawn_duck(duck):
-    servers = prefs.JSONloadFromDisk("channels.json", default="{}")
+    servers = prefs.JSONloadFromDisk("channels.json")
     try:
         if servers[duck["channel"].guild.id]["detecteur"].get(duck["channel"].id, False):
             for playerid in servers[duck["channel"].guild.id]["detecteur"][duck["channel"].id]:

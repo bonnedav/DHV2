@@ -15,6 +15,7 @@ from discord.ext import commands
 
 from cogs.utils import commons
 
+print("YOU ARE ON REWRITE !")
 if os.geteuid() == 0:
     print("DON'T RUN DUCKHUNT AS ROOT ! It create an unnessecary security risk.")
     sys.exit(1)
@@ -57,7 +58,7 @@ commons.bot = bot
 
 
 @bot.event
-async def on_command_error(error, ctx):
+async def on_command_error(ctx, error):
     language = prefs.getPref(ctx.message.guild, "language")
     if isinstance(error, commands.NoPrivateMessage):
         await ctx.message.author.send(_(':x: This command cannot be used in private messages.', language))
@@ -139,7 +140,8 @@ async def on_resumed():
 
 
 @bot.event
-async def on_command(command, ctx):
+async def on_command(ctx):
+    command = ctx.command
     bot.commands_used[command.name] += 1
     await comm.logwithinfos_message(ctx.message, str(command) + " (" + ctx.message.clean_content + ") ")
     if prefs.getPref(ctx.message.guild, "delete_commands") and checks.is_activated_check(ctx.message.channel):

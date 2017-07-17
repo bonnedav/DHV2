@@ -28,7 +28,7 @@ async def logwithinfos_message(message_obj: discord.Message, log_str: str):
     await logwithinfos(message_obj.channel, author=message_obj.author, log_str=log_str)
 
 
-async def logwithinfos(channel: discord.Channel, author=None, log_str=""):
+async def logwithinfos(channel: discord.ChannelType, author=None, log_str=""):
     commons.logger.debug(((channel.guild.name.center(16, " ") if len(channel.guild.name) < 16 else channel.guild.name[:16]) if channel else "XX") + " :: " + ((("#" + channel.name).center(16, " ") if len(channel.name) < 16 else channel.name[:16]) if channel else "XX") + " :: " + ("<" + author.name + ":" + str(author.id) + "> " if author else "") + log_str)
 
 
