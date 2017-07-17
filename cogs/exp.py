@@ -62,8 +62,8 @@ class Exp:
     @checks.is_activated_here()
     async def resetbesttime(self, ctx):
         message = ctx.message
-        scores.setStat(message.channel, message.author, "best_time", prefs.getPref(message.server, "time_before_ducks_leave"))
-        await comm.message_user(message, _(":ok: Your best time was reset.", prefs.getPref(message.server, "language")))
+        scores.setStat(message.channel, message.author, "best_time", prefs.getPref(message.guild, "time_before_ducks_leave"))
+        await comm.message_user(message, _(":ok: Your best time was reset.", prefs.getPref(message.guild, "language")))
 
     @commands.command(pass_context=True)
     @checks.is_not_banned()
@@ -74,15 +74,15 @@ class Exp:
         seconds_left = DAY - (now - thisDay)
         hours = int(seconds_left / HOUR)
         minutes = int((seconds_left - (HOUR * hours)) / 60)
-        await comm.message_user(ctx.message, _(":alarm_clock: Next giveback of weapons and chargers in {sec} seconds ({hours} hours and {minutes} minutes).", prefs.getPref(ctx.message.server, "language")).format(sec=seconds_left, hours=hours, minutes=minutes))
+        await comm.message_user(ctx.message, _(":alarm_clock: Next giveback of weapons and chargers in {sec} seconds ({hours} hours and {minutes} minutes).", prefs.getPref(ctx.message.guild, "language")).format(sec=seconds_left, hours=hours, minutes=minutes))
 
     @commands.command(pass_context=True)
     @checks.is_not_banned()
     @checks.is_activated_here()
     async def sendexp(self, ctx, target: discord.Member, amount: int):
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
-        if prefs.getPref(message.server, "user_can_give_exp"):
+        language = prefs.getPref(message.guild, "language")
+        if prefs.getPref(message.guild, "user_can_give_exp"):
             if scores.getStat(message.channel, message.author, "confisque", default=False):  # No weapon
                 await comm.message_user(message, _(":x: To prevent abuse, you can't send exp when you don't have a weapon.", language))
                 return
@@ -94,8 +94,8 @@ class Exp:
 
             if scores.getStat(message.channel, message.author, "exp") > amount:
                 scores.addToStat(message.channel, message.author, "exp", -amount)
-                if prefs.getPref(message.server, "tax_on_user_give") > 0:
-                    taxes = amount * (prefs.getPref(message.server, "tax_on_user_give") / 100)
+                if prefs.getPref(message.guild, "tax_on_user_give") > 0:
+                    taxes = amount * (prefs.getPref(message.guild, "tax_on_user_give") / 100)
                 else:
                     taxes = 0
                 try:
@@ -124,11 +124,11 @@ class Exp:
     async def duckstats(self, ctx, target: discord.Member = None):
         message = ctx.message
         channel = message.channel
-        language = prefs.getPref(message.server, "language")
-        send_to = channel if not prefs.getPref(ctx.message.server, "pm_stats") else message.author
+        language = prefs.getPref(message.guild, "language")
+        send_to = channel if not prefs.getPref(message.guild, "pm_stats") else message.author
 
         if not target:
-            target = ctx.message.author
+            target = message.author
 
         gs = Get_Stats(channel, target)
 
@@ -305,12 +305,12 @@ class Exp:
     @checks.is_not_banned()
     @checks.is_activated_here()
     async def top(self, ctx, number_of_scores: int = 10):
-        language = prefs.getPref(ctx.message.server, "language")
-        permissions = ctx.message.channel.permissions_for(ctx.message.server.me)
-        send_to = ctx.message.channel if not prefs.getPref(ctx.message.server, "pm_top") else ctx.message.author
+        language = prefs.getPref(ctx.message.guild, "language")
+        permissions = ctx.message.channel.permissions_for(ctx.message.guild.me)
+        send_to = ctx.message.channel if not prefs.getPref(ctx.message.guild, "pm_top") else ctx.message.author
 
         if number_of_scores != 10 \
-                or not prefs.getPref(ctx.message.server, "interactive_topscores_enabled") \
+                or not prefs.getPref(ctx.message.guild, "interactive_topscores_enabled") \
                 or not permissions.read_messages \
                 or not permissions.manage_messages \
                 or not permissions.embed_links \
@@ -384,9 +384,9 @@ class Exp:
                             if not joueur["exp"]:
                                 joueur["exp"] = 0
 
-                            member = ctx.message.server.get_member(joueur["id_"])
+                            member = ctx.message.guild.get_member(joueur["id_"])
 
-                            if prefs.getPref(ctx.message.server, "mention_in_topscores"):
+                            if prefs.getPref(ctx.message.guild, "mention_in_topscores"):
 
                                 mention = member.mention if member else joueur["name"][:10]
 
@@ -452,7 +452,7 @@ class Exp:
     @checks.is_not_banned()
     @checks.is_activated_here()
     async def shop(self, ctx):
-        language = prefs.getPref(ctx.message.server, "language")
+        language = prefs.getPref(ctx.message.guild, "language")
 
         await shoot.Shoot(self.bot).giveBackIfNeeded(ctx.message)
         if not ctx.invoked_subcommand:
@@ -462,7 +462,7 @@ class Exp:
 
     @shop.command(pass_context=True)
     async def list(self, ctx):
-        language = prefs.getPref(ctx.message.server, "language")
+        language = prefs.getPref(ctx.message.guild, "language")
         await comm.message_user(ctx.message, _("The list of items is available here : http://api-d.com/shop-items.html", language))
 
     @shop.command(pass_context=True, name="1")
@@ -471,7 +471,7 @@ class Exp:
         """Add a bullet to your weapon (7 exp)
         !shop 1"""
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
 
         if scores.getStat(message.channel, message.author, "balles", default=scores.getPlayerLevel(message.channel, message.author)["balles"]) < scores.getPlayerLevel(message.channel, message.author)["balles"]:
 
@@ -488,7 +488,7 @@ class Exp:
         """Add a charger to your weapon (13 exp)
         !shop 2"""
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         if scores.getStat(message.channel, message.author, "chargeurs", default=scores.getPlayerLevel(message.channel, message.author)["chargeurs"]) < scores.getPlayerLevel(message.channel, message.author)["chargeurs"]:
             scores.addToStat(message.channel, message.author, "chargeurs", 1)
             scores.addToStat(message.channel, message.author, "exp", -13)
@@ -503,7 +503,7 @@ class Exp:
         """Buy AP ammo (15 exp)
         !shop 3"""
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         if scores.getStat(message.channel, message.author, "ap_ammo") < time.time():
             scores.setStat(message.channel, message.author, "ap_ammo", int(time.time() + DAY))
             scores.addToStat(message.channel, message.author, "exp", -15)
@@ -518,7 +518,7 @@ class Exp:
         """Buy explosive ammo (25 exp)
         !shop 4"""
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         if scores.getStat(message.channel, message.author, "explosive_ammo") < time.time():
             scores.setStat(message.channel, message.author, "explosive_ammo", int(time.time() + DAY))
             scores.addToStat(message.channel, message.author, "exp", -25)
@@ -534,7 +534,7 @@ class Exp:
         """Get back your weapon (40 exp)
         !shop 5"""
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         if scores.getStat(message.channel, message.author, "confisque", default=False):
             scores.setStat(message.channel, message.author, "confisque", False)
             scores.addToStat(message.channel, message.author, "exp", -40)
@@ -549,7 +549,7 @@ class Exp:
         """Buy grease for your weapon (8 exp)
         !shop 6"""
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         if scores.getStat(message.channel, message.author, "graisse") < int(time.time()):
             scores.setStat(message.channel, message.author, "graisse", time.time() + DAY)
             scores.addToStat(message.channel, message.author, "exp", -8)
@@ -562,7 +562,7 @@ class Exp:
     @checks.have_exp(5)
     async def item7(self, ctx):
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         if not scores.getStat(message.channel, message.author, "sight"):
             scores.setStat(message.channel, message.author, "sight", 6)
             scores.addToStat(message.channel, message.author, "exp", -5)
@@ -577,7 +577,7 @@ class Exp:
         """Buy an infrared detector (15 exp)
         !shop 8"""
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         if scores.getStat(message.channel, message.author, "detecteurInfra") < int(time.time()) or scores.getStat(message.channel, message.author, "detecteur_infra_shots_left") <= 0:
             scores.setStat(message.channel, message.author, "detecteurInfra", time.time() + DAY)
             scores.setStat(message.channel, message.author, "detecteur_infra_shots_left", 6)
@@ -594,7 +594,7 @@ class Exp:
         """Buy a silencer (5 exp)
         !shop 9"""
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         if scores.getStat(message.channel, message.author, "silencieux") < int(time.time()):
             scores.setStat(message.channel, message.author, "silencieux", time.time() + DAY)
             scores.addToStat(message.channel, message.author, "exp", -5)
@@ -609,9 +609,9 @@ class Exp:
         """Buy a 4leaf clover (13 exp)
         !shop 10"""
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         if scores.getStat(message.channel, message.author, "trefle") < int(time.time()):
-            exp = random.randint(prefs.getPref(message.server, "clover_min_exp"), prefs.getPref(message.server, "clover_max_exp"))
+            exp = random.randint(prefs.getPref(message.guild, "clover_min_exp"), prefs.getPref(message.guild, "clover_max_exp"))
             scores.setStat(message.channel, message.author, "trefle", int(time.time()) + DAY)
             scores.setStat(message.channel, message.author, "trefle_exp", exp)
             scores.addToStat(message.channel, message.author, "exp", -13)
@@ -626,7 +626,7 @@ class Exp:
     @checks.have_exp(5)
     async def item11(self, ctx):
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         if scores.getStat(message.channel, message.author, "sunglasses") > int(time.time()):
             scores.setStat(message.channel, message.author, "sunglasses", int(time.time()) + DAY)
             scores.setStat(message.channel, message.author, "dazzled", False)
@@ -644,7 +644,7 @@ class Exp:
         """Buy new clothes, dry ones :p (7 exp)
         !shop 12"""
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         if scores.getStat(message.channel, message.author, "mouille") > int(time.time()):
             scores.setStat(message.channel, message.author, "mouille", 0)
             scores.addToStat(message.channel, message.author, "exp", -7)
@@ -658,7 +658,7 @@ class Exp:
     @checks.have_exp(6)
     async def item13(self, ctx):
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         scores.setStat(message.channel, message.author, "sabotee", "-")
         scores.setStat(message.channel, message.author, "sand", False)
         scores.addToStat(message.channel, message.author, "exp", -6)
@@ -668,7 +668,7 @@ class Exp:
     @checks.have_exp(5)
     async def item14(self, ctx, target: discord.Member):
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         if scores.getStat(message.channel, target, "sunglasses") > int(time.time()):
             await comm.message_user(message, _(":x: No way ! {mention} have some sunglasses ! He is immune to this ! ", language).format(mention=target.mention))
 
@@ -681,7 +681,7 @@ class Exp:
     @checks.have_exp(7)
     async def item15(self, ctx, target: discord.Member):
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         scores.setStat(message.channel, target, "sand", True)
         scores.setStat(message.channel, message.author, "graisse", 0)
         scores.addToStat(message.channel, message.author, "exp", -6)
@@ -693,7 +693,7 @@ class Exp:
         """ Drop a water bucket on someone (10 exp)
         !shop 16 [target]"""
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         scores.setStat(message.channel, target, "mouille", int(time.time()) + HOUR)
         scores.addToStat(message.channel, message.author, "exp", -10)
         await comm.message_user(message, _(":money_with_wings: You drop a full water bucket on {target}, forcing him to wait 1 hour for his/her clothes to dry before he/she can return hunting", language).format(**{
@@ -706,7 +706,7 @@ class Exp:
         """Sabotage a weapon
         !shop 17 [target]"""
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         if scores.getStat(message.channel, target, "sabotee", "-") == "-":
             scores.addToStat(message.channel, message.author, "exp", -14)
             scores.setStat(message.channel, target, "sabotee", message.author.name)
@@ -732,7 +732,7 @@ class Exp:
         """Buy a life insurance (10 exp)
         !shop 18"""
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         if scores.getStat(message.channel, message.author, "life_insurance") < int(time.time()):
             scores.setStat(message.channel, message.author, "life_insurance", int(time.time()) + DAY * 7)
             scores.addToStat(message.channel, message.author, "exp", -10)
@@ -751,7 +751,7 @@ class Exp:
         """Buy a decoy (8 exp)
         !shop 20"""
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         scores.addToStat(message.channel, message.author, "exp", -8)
         await comm.message_user(message, _(":money_with_wings: A duck will appear in the next 10 minutes on the channel, thanks to the decoy of {mention}. He brought it for 8 exp !", language).format(**{
             "mention": message.author.mention
@@ -767,7 +767,7 @@ class Exp:
     @checks.have_exp(2)
     async def item21(self, ctx):
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         if random.randint(1, 6) == 1:
             commons.ducks_planned[message.channel] += 1
         commons.bread[message.channel] += 20
@@ -782,14 +782,14 @@ class Exp:
         !shop 22"""
         servers = prefs.JSONloadFromDisk("channels.json")
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
 
-        if not "detecteur" in servers[message.server.id]:
-            servers[message.server.id]["detecteur"] = {}
-        if message.channel.id in servers[message.server.id]["detecteur"]:
-            servers[message.server.id]["detecteur"][message.channel.id].append(message.author.id)
+        if not "detecteur" in servers[message.guild.id]:
+            servers[message.guild.id]["detecteur"] = {}
+        if message.channel.id in servers[message.guild.id]["detecteur"]:
+            servers[message.guild.id]["detecteur"][message.channel.id].append(message.author.id)
         else:
-            servers[message.server.id]["detecteur"][message.channel.id] = [message.author.id]
+            servers[message.guild.id]["detecteur"][message.channel.id] = [message.author.id]
         prefs.JSONsaveToDisk(servers, "channels.json")
         scores.addToStat(message.channel, message.author, "exp", -5)
         await comm.message_user(message, _(":money_with_wings: You will be warned when the next duck on #{channel_name} spawns", language).format(**{
@@ -802,7 +802,7 @@ class Exp:
         """Buy a mechanical duck (40 exp)
         !shop 23"""
         message = ctx.message
-        language = prefs.getPref(message.server, "language")
+        language = prefs.getPref(message.guild, "language")
         scores.addToStat(message.channel, message.author, "exp", -50)
         await comm.message_user(message, _(":money_with_wings: You prepare a mechanical duck on the channel for 50 exp. That's bad, but so funny !", language), forcePv=True)
 
@@ -812,16 +812,16 @@ class Exp:
             await comm.logwithinfos_ctx(ctx, "Error deleting command : forbidden")
         await asyncio.sleep(90)
         try:
-            if prefs.getPref(message.server, "emoji_ducks"):
-                if prefs.getPref(message.server, "randomize_mechanical_ducks") == 0:
-                    await self.bot.send_message(message.channel, prefs.getPref(message.server, "emoji_used") + _(" < *BZAACK*", language))
+            if prefs.getPref(message.guild, "emoji_ducks"):
+                if prefs.getPref(message.guild, "randomize_mechanical_ducks") == 0:
+                    await self.bot.send_message(message.channel, prefs.getPref(message.guild, "emoji_used") + _(" < *BZAACK*", language))
                 else:
-                    await self.bot.send_message(message.channel, _(prefs.getPref(message.server, "emoji_used") + " < " + _(random.choice(commons.canards_cri), language)))
+                    await self.bot.send_message(message.channel, _(prefs.getPref(message.guild, "emoji_used") + " < " + _(random.choice(commons.canards_cri), language)))
             else:
 
-                if prefs.getPref(message.server, "randomize_mechanical_ducks") == 0:
+                if prefs.getPref(message.guild, "randomize_mechanical_ducks") == 0:
                     await self.bot.send_message(message.channel, _("-_-'\`'°-_-.-'\`'° %__%   *BZAACK*", language))
-                elif prefs.getPref(message.server, "randomize_mechanical_ducks") == 1:
+                elif prefs.getPref(message.guild, "randomize_mechanical_ducks") == 1:
                     await self.bot.send_message(message.channel, "-_-'\`'°-_-.-'\`'° %__%    " + _(random.choice(commons.canards_cri), language=language))
                 else:
                     await self.bot.send_message(message.channel, random.choice(commons.canards_trace) + "  " + random.choice(commons.canards_portrait) + "  " + _(random.choice(commons.canards_cri), language=language))  # ASSHOLE ^^

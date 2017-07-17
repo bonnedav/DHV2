@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import datetime
+import os
 import re
 import sys
 
 import discord
-import os
 import psutil
 from discord.ext import commands
 
@@ -134,7 +134,7 @@ class Meta:
         p50cj = 0
         p24cj = 0
         m24cj = 0
-        for server in self.bot.servers:
+        for server in self.bot.guilds:
             serveurs += 1
             slang = getPref(server, "language")
             if slang == "fr_FR":
@@ -204,7 +204,7 @@ class Meta:
 
     @commands.command(pass_context=True)
     async def ping(self, ctx):
-        await comm.message_user(ctx.message, _("BANG OR BANG, what's the best ? :p Anyway I'm up and running", getPref(ctx.message.server, "language")))
+        await comm.message_user(ctx.message, _("BANG OR BANG, what's the best ? :p Anyway I'm up and running", getPref(ctx.message.guild, "language")))
 
     @commands.command(pass_context=True)
     async def wiki(self, ctx):
@@ -212,7 +212,7 @@ class Meta:
 
     @commands.command(pass_context=True)
     async def help(self, ctx):
-        await comm.message_user(ctx.message, _("Check out our new website ! http://api-d.com/command-list.html", getPref(ctx.message.server, "language")))
+        await comm.message_user(ctx.message, _("Check out our new website ! http://api-d.com/command-list.html", getPref(ctx.message.guild, "language")))
 
 
 def setup(bot):
