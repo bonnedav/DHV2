@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import discord.utils
-from cogs.utils import comm, commons, prefs, scores
 from discord.ext import commands
 
+from cogs.utils import comm, commons, prefs, scores
 from cogs.utils.commons import _
 
 
 def is_owner_check(message):
-    owner = message.author.id in ['138751484517941259', '94822638991454208']
+    owner = message.author.id in [138751484517941259, 94822638991454208]
     # bot.loop.create_task(comm.logwithinfos_message(message, "Check owner : " + str(owner)))
     return owner  # Owner of the bot
 
@@ -22,7 +22,7 @@ def is_admin_check(message):
     servers = prefs.JSONloadFromDisk("channels.json")
 
     try:
-        admin = message.author.id in servers[message.server.id]["admins"]
+        admin = message.author.id in servers[message.guild.id]["admins"]
     except KeyError:
         admin = False
     # bot.loop.create_task(comm.logwithinfos_message(message, "Check admin : " + str(admin)))
@@ -44,7 +44,7 @@ def is_activated_check(channel):
     servers = prefs.JSONloadFromDisk("channels.json")
 
     try:
-        if channel.id in servers[channel.server.id]["channels"]:
+        if channel.id in servers[channel.guild.id]["channels"]:
             activated = True
         else:
             activated = False
@@ -63,7 +63,7 @@ def have_exp(exp, warn=True):
     def check(ctx, exp, warn):
         exp_ = have_exp_check(ctx.message, exp)
         if not exp_ and warn:
-            commons.bot.loop.create_task(comm.message_user(ctx.message, _(":x: You can't use this command, you don't have at least {exp} exp points!", prefs.getPref(ctx.message.server, "language")).format(**{
+            commons.bot.loop.create_task(comm.message_user(ctx.message, _(":x: You can't use this command, you don't have at least {exp} exp points!", prefs.getPref(ctx.message.guild, "language")).format(**{
                 "exp": exp
             })))
         return exp_
@@ -76,7 +76,7 @@ def is_owner(warn=True):
     def check(ctx, warn):
         owner = is_owner_check(ctx.message)
         if not owner and warn:
-            commons.bot.loop.create_task(comm.message_user(ctx.message, _(":x: You can't use this command, you are not the owner of the bot !", prefs.getPref(ctx.message.server, "language"))))
+            commons.bot.loop.create_task(comm.message_user(ctx.message, _(":x: You can't use this command, you are not the owner of the bot !", prefs.getPref(ctx.message.guild, "language"))))
         return owner
 
     owner = commands.check(lambda ctx: check(ctx, warn))
@@ -91,7 +91,7 @@ def is_admin(warn=True):
     def check(ctx, warn):
         admin = is_owner_check(ctx.message) or is_admin_check(ctx.message)
         if not admin and warn:
-            commons.bot.loop.create_task(comm.message_user(ctx.message, _(":x: You can't use this command, you are not an admin on this server!", prefs.getPref(ctx.message.server, "language"))))
+            commons.bot.loop.create_task(comm.message_user(ctx.message, _(":x: You can't use this command, you are not an admin on this server!", prefs.getPref(ctx.message.guild, "language"))))
         return admin
 
     admin = commands.check(lambda ctx: check(ctx, warn))
@@ -145,9 +145,9 @@ def admin_or_permissions(**perms):
 
 def is_in_servers(*server_ids):
     def predicate(ctx):
-        server = ctx.message.server
-        if server is None:
+        guild = ctx.message.guild
+        if guild is None:
             return False
-        return server.id in server_ids
+        return guild.id in server_ids
 
     return commands.check(predicate)
