@@ -24,7 +24,7 @@ class Carbonitex:
 
     async def update(self):
         payload = json.dumps({
-            'server_count': len(self.bot.servers)
+            'server_count': len(self.bot.guilds)
         })
 
         headers = {
