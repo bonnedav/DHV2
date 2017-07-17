@@ -258,7 +258,7 @@ class Exp:
                 changed = False
 
             def is_good_reaction(reaction, user):
-                return reaction.author == ctx.message.author and reaction.message == duckstats_message and reaction.emoji in [next_emo, prev_emo, first_page_emo]
+                return user == ctx.message.author and reaction.message == duckstats_message and reaction.emoji in [next_emo, prev_emo, first_page_emo]
 
             # La bonne époque : res = await bot.wait_for('reaction_add', emoji=[yes, no], user=ctx.message.author, message=msg, timeout=120)
             try:

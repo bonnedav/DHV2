@@ -22,7 +22,7 @@ def is_admin_check(message):
     servers = prefs.JSONloadFromDisk("channels.json")
 
     try:
-        admin = message.author.id in servers[message.guild.id]["admins"]
+        admin = str(message.author.id) in servers[str(message.guild.id)]["admins"]
     except KeyError:
         admin = False
     # bot.loop.create_task(comm.logwithinfos_message(message, "Check admin : " + str(admin)))

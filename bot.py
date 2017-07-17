@@ -90,15 +90,17 @@ async def on_command_error(ctx, error):
             await msg.add_reaction(no)
 
             def is_good_reaction(reaction, user):
-                return user == ctx.message.author and reaction.message == msg and reaction.emoji in [yes, no]
+
+                return reaction.message == msg  # and reaction.emoji in [yes, no]
 
             # La bonne époque : res = await bot.wait_for('reaction_add', emoji=[yes, no], user=ctx.message.author, message=msg, timeout=120)
             try:
-                res = await bot.wait_for('reaction_add', check=is_good_reaction, timeout=120)
+                reaction, user = await bot.wait_for('reaction_add', check=is_good_reaction, timeout=120)
+                res = True
             except asyncio.TimeoutError:
-                res = None
+                res = False
+
             if res:
-                reaction, user = res
                 emoji = reaction.emoji
                 if emoji == yes:
 
