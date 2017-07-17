@@ -3,7 +3,6 @@
 
 # TODO: A refaire en se basant sur https://github.com/Rapptz/RoboDanny/blob/32d5b346a66e28f8ff613005b4a819d7154690b2/cogs/utils/config.py
 import json
-
 import os
 
 from cogs.utils import commons
@@ -18,7 +17,7 @@ def getPref(server, pref):
     else:
         servers = commons.servers
     try:
-        return servers[server.id]["settings"].get(pref, commons.defaultSettings[pref]["value"])
+        return servers[str(server.id)]["settings"].get(pref, commons.defaultSettings[pref]["value"])
     except KeyError:
         return commons.defaultSettings[pref]["value"]
 
@@ -33,7 +32,7 @@ def setPref(server, pref, value=None, force=False):
     if value is not None:
 
         if not "settings" in servers[server.id]:
-            servers[server.id]["settings"] = {}
+            servers[str(server.id)]["settings"] = {}
         try:
             # print(commons.defaultSettings[pref]["type"](value))
             if "min" in commons.defaultSettings[pref].keys():
@@ -44,18 +43,18 @@ def setPref(server, pref, value=None, force=False):
                 if commons.defaultSettings[pref]["type"](value) > commons.defaultSettings[pref]["max"]:
                     return False
 
-            servers[server.id]["settings"][pref] = commons.defaultSettings[pref]["type"](value)
+            servers[str(server.id)]["settings"][pref] = commons.defaultSettings[pref]["type"](value)
 
         except ValueError:
             if force:
-                servers[server.id]["settings"][pref] = value
+                servers[str(server.id)]["settings"][pref] = value
             else:
                 return False
     else:
-        if not "settings" in servers[server.id]:
+        if not "settings" in servers[str(server.id)]:
             return True
-        if pref in servers[server.id]["settings"]:
-            servers[server.id]["settings"].pop(pref)
+        if pref in servers[str(server.id)]["settings"]:
+            servers[str(server.id)]["settings"].pop(pref)
 
     JSONsaveToDisk(servers, "channels.json")
     return True

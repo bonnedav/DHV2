@@ -77,15 +77,15 @@ class ServerAdmin:
         """
         language = prefs.getPref(ctx.message.guild, "language")
         servers = prefs.JSONloadFromDisk("channels.json")
-        if not "channels" in servers[ctx.message.guild.id]:
-            servers[ctx.message.guild.id]["channels"] = []
+        if not "channels" in servers[str(ctx.message.guild.id)]:
+            servers[str(ctx.message.guild.id)]["channels"] = []
 
-        if not ctx.message.channel.id in servers[ctx.message.guild.id]["channels"]:
+        if not ctx.message.channel.id in servers[str(ctx.message.guild.id)]["channels"]:
             await comm.logwithinfos_ctx(ctx, "Adding channel {name} | {id} to channels.json...".format(**{
                 "id"  : ctx.message.channel.id,
                 "name": ctx.message.channel.name
             }))
-            servers[ctx.message.guild.id]["channels"] += [ctx.message.channel.id]
+            servers[str(ctx.message.guild.id)]["channels"] += [str(ctx.message.channel.id)]
             prefs.JSONsaveToDisk(servers, "channels.json")
             await ducks.planifie(ctx.message.channel)
             await comm.message_user(ctx.message, _(":robot: Channel added !", language))
@@ -121,7 +121,7 @@ class ServerAdmin:
         """
         language = prefs.getPref(ctx.message.guild, "language")
         servers = prefs.JSONloadFromDisk("channels.json")
-        servers[ctx.message.guild.id]["admins"] += [target.id]
+        servers[str(ctx.message.guild.id)]["admins"] += [str(target.id)]
         await comm.logwithinfos_ctx(ctx, "Adding admin {admin_name} | {admin_id} to configuration file for server {server_name} | {server_id}.".format(**{
             "admin_name" : target.name,
             "admin_id"   : target.id,
@@ -142,8 +142,8 @@ class ServerAdmin:
         """
         language = prefs.getPref(ctx.message.guild, "language")
         servers = prefs.JSONloadFromDisk("channels.json")
-        if target.id in servers[ctx.message.guild.id]["admins"]:
-            servers[ctx.message.guild.id]["admins"].remove(target.id)
+        if target.id in servers[str(ctx.message.guild.id)]["admins"]:
+            servers[str(ctx.message.guild.id)]["admins"].remove(str(target.id))
             await comm.logwithinfos_ctx(ctx, "Deleting admin {admin_name} | {admin_id} from configuration file for server {server_name} | {server_id}.".format(**{
                 "admin_name" : target.name,
                 "admin_id"   : target.id,
