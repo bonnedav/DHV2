@@ -249,7 +249,7 @@ class Exp:
                         embed.add_field(name=_("Effect: wet", language), value=str(self.objectTD(gs, language, "mouille")))
 
                 try:
-                    await duckstats_message.edit(":duck:", embed=embed)
+                    await duckstats_message.edit(content=":duck:", embed=embed)
                 except:
                     commons.logger.exception("Error sending embed, with embed " + str(embed.to_dict()))
                     await comm.message_user(message, _(":warning: Error sending embed, check if the bot have the permission embed_links and try again !", language))
@@ -411,14 +411,14 @@ class Exp:
                         embed.add_field(name=_("Number of ducks killed", language), value=ducks_killed_list, inline=True)
 
                         try:
-                            await message.edit(":duck:", embed=embed)
+                            await message.edit(content=":duck:", embed=embed)
                         except discord.errors.Forbidden:
                             await send_to.send(_(":warning: Error sending embed, check if the bot have the permission embed_links and try again !", language))
 
                         changed = False
                     else:
                         current_page -= 1
-                        await message.edit(_("There is nothing more...", language))
+                        await message.edit(content=_("There is nothing more...", language))
 
                 def is_good_reaction(reaction, user):
                     return reaction.message == message and reaction.emoji in [next_emo, prev_emo, first_page_emo]

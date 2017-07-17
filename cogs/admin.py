@@ -130,7 +130,7 @@ class Admin:
             if time.time() - lu >= 5 or i == total:
                 lu = time.time()
                 try:
-                    await tmp.edit(str(ctx.message.author.mention) + _(" > Processing servers ({done}/{total})", language).format(**{
+                    await tmp.edit(content=str(ctx.message.author.mention) + _(" > Processing servers ({done}/{total})", language).format(**{
                         "done" : i,
                         "total": total
                     }))

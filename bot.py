@@ -106,13 +106,13 @@ async def on_command_error(ctx, error):
                     support_channel = discord.utils.find(lambda c: c.id == 273930986314792960, discord.utils.find(lambda s: s.id == 195260081036591104, bot.guilds).channels)
                     invite = await ctx.message.channel.create_invite(max_uses=5)
                     invite = invite.url
-                    await msg.edit(_(":anger_right: Sending error report...", language))
+                    await msg.edit(content=_(":anger_right: Sending error report...", language))
 
                     await support_channel.send(_(":hammer: {date} :hammer:").format(date=int(time.time())))
                     await support_channel.send(await comm.paste(_("{cause}\n\n{tb}").format(cause=error.original.__class__.__name__,
                                                                                                          tb="\n".join(traceback.format_tb(error.original.__traceback__))), "py"))
                     await support_channel.send(invite)
-                    await msg.edit(_(":ok: Error message sent, thanks :)", language))
+                    await msg.edit(content=_(":ok: Error message sent, thanks :)", language))
                     return
             await comm.message_user(ctx.message, _("OK, I won't send an error report", language))
 
