@@ -6,8 +6,9 @@
 """
 
 import discord
-from cogs import checks
 from discord.ext import commands
+
+from cogs import checks
 
 
 def embed_perms(message):
@@ -33,7 +34,7 @@ class Userinfo:
                 try:
                     name = ctx.message.mentions[0]
                 except:
-                    name = ctx.message.server.get_member_named(name)
+                    name = ctx.message.guild.get_member_named(name)
                 if not name:
                     await self.bot.send_message(ctx.message.channel, self.bot.bot_prefix + 'Could not find user.')
                     return

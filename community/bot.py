@@ -8,11 +8,11 @@ import asyncio
 import datetime
 import json
 import logging
+import os
 import sys
 import traceback
 from collections import Counter
 
-import os
 from discord.ext import commands
 
 try:
@@ -59,7 +59,7 @@ bot = commands.Bot(command_prefix=prefix, description=__doc__, pm_help=None, hel
 async def on_ready():
     logger.info('Logged in as:')
     logger.info('Username: ' + bot.user.name)
-    logger.info('ID: ' + bot.user.id)
+    logger.info('ID: ' + str(bot.user.id))
     if not hasattr(bot, 'uptime'):
         bot.uptime = datetime.datetime.utcnow()
 

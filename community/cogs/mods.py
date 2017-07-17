@@ -231,11 +231,11 @@ class Mods:
         :param reason: Reason given for the unban.
         :return case_numer: Return the case and the case number.
         """
-        bans = await self.bot.get_bans(ctx.message.server)
+        bans = await self.bot.get_bans(ctx.message.guild)
         user = discord.utils.find(lambda m: (str(m.id) == str(user_str)) or (str(m.name + "#" + m.discriminator) == str(user_str)), bans)
         if user:
 
-            await self.bot.unban(ctx.message.server, user)
+            await self.bot.unban(ctx.message.guild, user)
             case = await self.add_action(user=user, action="Unban", by=ctx.message.author, reason=reason)
             embed = await self.get_case_embed(case)
             await self.bot.send_message(ctx.message.channel, embed=embed)

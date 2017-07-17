@@ -8,8 +8,9 @@
 import operator
 
 import discord
-from cogs import checks
 from discord.ext import commands
+
+from cogs import checks
 
 
 class WhoPlays:
@@ -25,7 +26,7 @@ class WhoPlays:
             return
 
         user = ctx.message.author
-        server = ctx.message.server
+        server = ctx.message.guild
         members = server.members
 
         playing_game = ""
@@ -62,7 +63,7 @@ class WhoPlays:
     async def cgames(self, ctx):
         """Shows the currently most played games"""
         user = ctx.message.author
-        server = ctx.message.server
+        server = ctx.message.guild
         members = server.members
 
         freq_list = {}

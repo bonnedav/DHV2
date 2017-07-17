@@ -99,7 +99,7 @@ class Admin:
     @commands.command(pass_context=True)
     @checks.is_owner()
     async def dbtable(self, ctx):
-        if not prefs.getPref(ctx.message.server, "global_scores"):
+        if not prefs.getPref(ctx.message.guild, "global_scores"):
             await comm.message_user(ctx.message, str(ctx.message.guild.id) + "-" + str(ctx.message.channel.id))
         else:
             await comm.message_user(ctx.message, str(ctx.message.guild.id))
@@ -171,7 +171,7 @@ class Admin:
     @commands.command(pass_context=True)
     @checks.is_owner()
     async def cleanup_servers(self, ctx):
-        language = prefs.getPref(ctx.message.server, "language")
+        language = prefs.getPref(ctx.message.guild, "language")
 
         await comm.message_user(ctx.message, _("Serching for servers to leave", language))
         to_clean = []
@@ -226,7 +226,7 @@ class Admin:
     @checks.is_owner()
     async def broadcast(self, ctx, *, bc: str):
         """!broadcast [message]"""
-        language = prefs.getPref(ctx.message.server, "language")
+        language = prefs.getPref(ctx.message.guild, "language")
         await comm.message_user(ctx.message, _("Starting the broadcast", language))
         await comm.logwithinfos_ctx(ctx, "Broadcast started")
         for channel in list(commons.ducks_planned.keys()):
@@ -241,7 +241,7 @@ class Admin:
     @commands.command(pass_context=True)
     @checks.is_owner()
     async def send_message(self, ctx, server_name: str, channel_name: str, *, message: str):
-        language = prefs.getPref(ctx.message.server, "language")
+        language = prefs.getPref(ctx.message.guild, "language")
 
         await self.bot.send_message(discord.utils.find(lambda m: m.name == channel_name, discord.utils.find(lambda m: m.name == server_name or str(m.id) == str(server_name), self.bot.guilds).channels), message)
         await comm.message_user(ctx.message, _("Message ({message}) sent to {server} #{channel} ", language).format(message=message, server=server_name, channel=channel_name))

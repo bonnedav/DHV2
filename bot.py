@@ -127,7 +127,7 @@ async def on_command_error(error, ctx):
 async def on_ready():
     logger.info('Logged in as:')
     logger.info('Username: ' + bot.user.name)
-    logger.info('ID: ' + bot.user.id)
+    logger.info('ID: ' + str(bot.user.id))
     await bot.change_presence(game=discord.Game(name="Killing ducks | !help"))
     if not hasattr(bot, 'uptime'):
         bot.uptime = datetime.datetime.utcnow()
@@ -168,7 +168,7 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    if str(message.author.id) in commons.blocked_users:
+    if message.author.id in commons.blocked_users:
         return
 
     # await comm.logwithinfos_message(message, message.content)

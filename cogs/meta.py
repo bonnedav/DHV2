@@ -90,7 +90,7 @@ class Meta:
     #     To use this command you must have Manage Server permissions or have
     #     the Bot Admin role.
     #     """
-    #     server = ctx.message.server
+    #     server = ctx.message.guild
     #     try:
     #         await self.bot.leave_server(server)
     #     except:
@@ -99,7 +99,7 @@ class Meta:
     @commands.command(pass_context=True)
     async def uptime(self, ctx):
         """Tells you how long the bot has been up for."""
-        language = getPref(ctx.message.server, "language")
+        language = getPref(ctx.message.guild, "language")
         await self.bot.say(_('Uptime: **{}**', language).format(self.get_bot_uptime()))
 
     @commands.command(rest_is_raw=True, hidden=True)
@@ -116,7 +116,7 @@ class Meta:
 
     @commands.command(pass_context=True)
     async def stats(self, ctx):
-        language = getPref(ctx.message.server, "language")
+        language = getPref(ctx.message.guild, "language")
         embed = discord.Embed(description=_("Usage statistics of duckhunt", language))
         embed.title = "DUCKHUNT STATS"
         # embed.set_author(name=str(target), icon_url=target.avatar_url)

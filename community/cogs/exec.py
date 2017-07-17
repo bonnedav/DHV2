@@ -12,8 +12,9 @@ from contextlib import redirect_stdout
 import aiohttp
 import discord
 import requests
-from cogs import checks
 from discord.ext import commands
+
+from cogs import checks
 
 
 class EmbedShell:
@@ -84,7 +85,7 @@ class EmbedShell:
             'ctx'    : ctx,
             'bot'    : self.bot,
             'message': ctx.message,
-            'server' : ctx.message.server,
+            'server' : ctx.message.guild,
             'channel': ctx.message.channel,
             'author' : ctx.message.author,
             'discord': discord,
