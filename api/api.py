@@ -14,11 +14,12 @@
 # TODO: vérifier la validité des serv/chan ids à chaque fois
 import decimal
 import json
-
-from cogs.utils import checks, commons, prefs, scores
 from collections import defaultdict
+
 from discord.enums import ChannelType
 from kyoukai import HTTPRequestContext, Kyoukai
+
+from cogs.utils import checks, commons, prefs, scores
 
 api = Kyoukai('dh_api')
 
@@ -88,7 +89,7 @@ async def guilds(ctx: HTTPRequestContext):
     servers = []
     server_count = 0
 
-    for server in commons.bot.servers:
+    for server in commons.bot.guilds:
         global_scores = prefs.getPref(server, "global_scores")
         channel_count = 0
         hasPlayers = False

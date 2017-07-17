@@ -31,7 +31,7 @@ Please ask an admin for the @Server admin rank.
 2/ Moderators are always right"""
 
     async def on_member_join(self, member):
-        await self.bot.send_message(member, self.message)
+        await member.send(self.message)
 
 
 def setup(bot):

@@ -86,9 +86,9 @@ async def on_command(command, ctx):
 @bot.event
 async def on_command_error(error, ctx):
     if isinstance(error, commands.NoPrivateMessage):
-        await bot.send_message(ctx.message.author, ':x: This command cannot be used in private messages.')
+        await ctx.message.author.send(':x: This command cannot be used in private messages.')
     elif isinstance(error, commands.DisabledCommand):
-        await bot.send_message(ctx.message.author, ':x: Sorry. This command is disabled and cannot be used.')
+        await ctx.message.author.send(':x: Sorry. This command is disabled and cannot be used.')
     elif isinstance(error, commands.CommandInvokeError):
         sending = 'In {0.command.qualified_name}:\n'.format(ctx)
         sending += "\n".join(traceback.format_tb(error.original.__traceback__))
@@ -96,15 +96,15 @@ async def on_command_error(error, ctx):
         sending += "\n" + '{0.__class__.__name__}: {0}'.format(error.original)
         logger.error(sending)
 
-        msg = await bot.send_message(ctx.message.channel, ":x: An error ({error}) happened in {command}, here is the traceback : ```\n{tb}\n```\n".format(**{
+        msg = await ctx.message.channel.send(":x: An error ({error}) happened in {command}, here is the traceback : ```\n{tb}\n```\n".format(**{
             "command": ctx.command.qualified_name,
             "error"  : error.original.__class__.__name__,
             "tb"     : "\n".join(traceback.format_tb(error.original.__traceback__, 4)),
         }))
     elif isinstance(error, commands.MissingRequiredArgument):
-        await bot.send_message(ctx.message.channel, ":x: Missing a required argument. " + (("Help : \n```\n" + ctx.command.help + "\n```") if ctx.command.help else ""))
+        await ctx.message.channel.send(":x: Missing a required argument. " + (("Help : \n```\n" + ctx.command.help + "\n```") if ctx.command.help else ""))
     elif isinstance(error, commands.BadArgument):
-        await bot.send_message(ctx.message.channel, ":x: Bad argument provided. " + (("Help : \n```\n" + ctx.command.help + "\n```") if ctx.command.help else ""))
+        await ctx.message.channel.send(":x: Bad argument provided. " + (("Help : \n```\n" + ctx.command.help + "\n```") if ctx.command.help else ""))
 
 
 def load_credentials():

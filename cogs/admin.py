@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import asyncio
 import copy
 import inspect
 import random
@@ -82,7 +83,7 @@ class Admin:
             if inspect.isawaitable(result):
                 result = await result
         except Exception as e:
-            await self.bot.say(python.format(type(e).__name__ + ': ' + str(e)))
+            await ctx.message.channel.send(python.format(type(e).__name__ + ': ' + str(e)))
             return
 
         await comm.message_user(ctx.message, python.format(result))
@@ -114,7 +115,7 @@ class Admin:
         x._set_field_names([_("Name", language), _("Invitation", language), _("Server ID", language), _("Number of enabled channels", language), _("Number of connected users", language), _("Ducks per day", language), _("Number of unneeded permissions", language), _("Number of needed permissions", language)])
         x.reversesort = True
 
-        tmp = await self.bot.send_message(ctx.message.channel, str(ctx.message.author.mention) + _(" > En cours", language))
+        tmp = await ctx.message.channel.send(str(ctx.message.author.mention) + _(" > En cours", language))
         servers = JSONloadFromDisk("channels.json")
 
 
@@ -129,7 +130,7 @@ class Admin:
             if time.time() - lu >= 5 or i == total:
                 lu = time.time()
                 try:
-                    await self.bot.edit_message(tmp, str(ctx.message.author.mention) + _(" > Processing servers ({done}/{total})", language).format(**{
+                    await tmp.edit(str(ctx.message.author.mention) + _(" > Processing servers ({done}/{total})", language).format(**{
                         "done" : i,
                         "total": total
                     }))
@@ -153,7 +154,7 @@ class Admin:
                     permissions = channel.permissions_for(server.me)
                     if permissions.create_instant_invite:
                         try:
-                            invite = await self.bot.create_invite(channel, max_age=120 * 60)
+                            invite = await channel.create_invite(max_age=120 * 60)
                             invite = invite.url
                         except:
                             invite = ""
@@ -197,10 +198,13 @@ class Admin:
         await comm.message_user(ctx.message, _("Cleaning {servers} unused servers (accounting for {members} members in total)", language).format(servers=len(to_clean), members=total_members_lost))
         await comm.message_user(ctx.message, _("To confirm, please type {random_str} now.", language).format(random_str=random_str))
 
-        def is_random_str(m):
-            return m.content == random_str
+        def is_good_message(m):
+            return m.author == ctx.message.author and m.content == random_str
 
-        guess = await self.bot.wait_for_message(timeout=10.0, author=ctx.message.author, check=is_random_str)
+        try:
+            guess = await self.bot.wait_for('message', check=is_good_message, timeout=10)
+        except asyncio.TimeoutError:
+            guess = None
 
         if guess is None:
             await comm.message_user(ctx.message, _(":x: Operation canceled, you took too long to answer.", language).format(random_str=random_str))
@@ -209,12 +213,12 @@ class Admin:
             failed = 0
             for server in to_clean:
                 try:
-                    await self.bot.send_message(server, ":warning: I'll now leave the server, as you have not configured me... Join https://discord.gg/2BksEkV the duckhunt server for help about the setup and actions you have to take to bring me back, or check https://api-d.com for more help.")
+                    await server.send(":warning: I'll now leave the server, as you have not configured me... Join https://discord.gg/2BksEkV the duckhunt server for help about the setup and actions you have to take to bring me back, or check https://api-d.com for more help.")
                 except:
                     failed += 1
                     pass
                 try:
-                    await self.bot.leave_server(server)  # Good Bye :'(
+                    await server.leave()  # Good Bye :'(
                 except:
                     commons.logger.exception("")
 
@@ -231,7 +235,7 @@ class Admin:
         await comm.logwithinfos_ctx(ctx, "Broadcast started")
         for channel in list(commons.ducks_planned.keys()):
             try:
-                await self.bot.send_message(channel, bc)
+                await channel.send(bc)
             except:
                 await comm.logwithinfos_ctx(ctx, "Error broadcasting to " + str(channel.name))
                 pass
@@ -243,14 +247,14 @@ class Admin:
     async def send_message(self, ctx, server_name: str, channel_name: str, *, message: str):
         language = prefs.getPref(ctx.message.guild, "language")
 
-        await self.bot.send_message(discord.utils.find(lambda m: m.name == channel_name, discord.utils.find(lambda m: m.name == server_name or str(m.id) == str(server_name), self.bot.guilds).channels), message)
+        await discord.utils.find(lambda m: m.name == channel_name, discord.utils.find(lambda m: m.name == server_name or str(m.id) == str(server_name), self.bot.guilds).channels).send(message)
         await comm.message_user(ctx.message, _("Message ({message}) sent to {server} #{channel} ", language).format(message=message, server=server_name, channel=channel_name))
 
     @commands.command(pass_context=True)
     @checks.is_owner()
     async def say(self, ctx, *, message: str):
 
-        await self.bot.send_message(ctx.message.channel, message)
+        await ctx.message.channel.send(message)
 
     @commands.command(pass_context=True)
     @checks.is_owner()

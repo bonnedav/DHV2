@@ -71,7 +71,7 @@ class Mods:
         if announce:
 
             embed = await self.get_case_embed(current_case)
-            await self.bot.send_message(self.bot.get_channel("317432206920515597"), embed=embed)
+            await self.bot.get_channel("317432206920515597").send(embed=embed)
 
         return current_case
 
@@ -124,7 +124,7 @@ class Mods:
             user_log = []
 
         if not user_log:
-            await self.bot.send_message(ctx.message.channel, "No log for this user.")
+            await ctx.message.channel.send("No log for this user.")
         else:
             actions = {
                 "Kick" : [],
@@ -136,7 +136,7 @@ class Mods:
                 with open(self.root_dir + "/cases/" + str(case) + ".json") as infile:
                     case_dict = json.load(infile)
                 actions[case_dict["action"]].append(case)
-            await self.bot.send_message(ctx.message.channel,
+            await ctx.message.channel.send(
                                         """{mention} was targeted by mods {total} times. He recived :
 
                                             - **{kick}** kick(s) {list_kicks},
@@ -175,7 +175,7 @@ class Mods:
                 case = json.load(infile)
 
         except FileNotFoundError:
-            await self.bot.send_message(ctx.message.channel, "Error : Unknown case ID")
+            await ctx.message.channel.send("Error : Unknown case ID")
             return None
 
         case["reason"] = reason
@@ -184,7 +184,7 @@ class Mods:
         with open(self.root_dir + "/cases/" + str(case_number) + ".json", "w") as outfile:
             json.dump(case, outfile)
 
-        await self.bot.send_message(ctx.message.channel, embed=await self.get_case_embed(case_number))
+        await ctx.message.channel.send(embed=await self.get_case_embed(case_number))
 
     @checks.have_required_level(3)
     @moderation.command(pass_context=True)
@@ -196,10 +196,10 @@ class Mods:
         :param reason: Reason given for the ban.
         :return case_numer: Return the case and the case number.
         """
-        await self.bot.ban(user, delete_message_days=purge)
+        await user.ban(delete_message_days=purge)
         case = await self.add_action(user=user, action="Ban", by=ctx.message.author, reason=reason)
         embed = await self.get_case_embed(case)
-        await self.bot.send_message(ctx.message.channel, embed=embed)
+        await ctx.message.channel.send(embed=embed)
 
     @checks.have_required_level(3)
     @moderation.command(pass_context=True)
@@ -211,16 +211,16 @@ class Mods:
         :param reason: Reason given for the ban.
         :return case_numer: Return the case and the case number.
         """
-        await self.bot.kick(user)
+        await user.kick()
 
         def is_user(u):
             return u.author == user
 
-        await self.bot.purge_from(ctx.channel, limit=purge, check=is_user)
+        await ctx.channel.purge(limit=purge, check=is_user)
 
         case = await self.add_action(user=user, action="Kick", by=ctx.message.author, reason=reason)
         embed = await self.get_case_embed(case)
-        await self.bot.send_message(ctx.message.channel, embed=embed)
+        await ctx.message.channel.send(embed=embed)
 
     @checks.have_required_level(3)
     @moderation.command(pass_context=True)
@@ -231,16 +231,16 @@ class Mods:
         :param reason: Reason given for the unban.
         :return case_numer: Return the case and the case number.
         """
-        bans = await self.bot.get_bans(ctx.message.guild)
+        bans = await ctx.message.guild.bans()
         user = discord.utils.find(lambda m: (str(m.id) == str(user_str)) or (str(m.name + "#" + m.discriminator) == str(user_str)), bans)
         if user:
 
-            await self.bot.unban(ctx.message.guild, user)
+            await ctx.message.guild.unban(user)
             case = await self.add_action(user=user, action="Unban", by=ctx.message.author, reason=reason)
             embed = await self.get_case_embed(case)
-            await self.bot.send_message(ctx.message.channel, embed=embed)
+            await ctx.message.channel.send(embed=embed)
         else:
-            await self.bot.send_message(ctx.message.channel, "User not found :(")
+            await ctx.message.channel.send("User not found :(")
 
     @checks.have_required_level(3)
     @moderation.command(pass_context=True)
@@ -253,7 +253,7 @@ class Mods:
         """
         case = await self.add_action(user=user, action="Warn", by=ctx.message.author, reason=reason)
         embed = await self.get_case_embed(case)
-        await self.bot.send_message(ctx.message.channel, embed=embed)
+        await ctx.message.channel.send(embed=embed)
 
     @checks.have_required_level(3)
     @moderation.command(pass_context=True)
@@ -266,7 +266,7 @@ class Mods:
         """
         case = await self.add_action(user=user, action="Note", by=ctx.message.author, reason=reason)
         embed = await self.get_case_embed(case)
-        await self.bot.send_message(ctx.message.channel, embed=embed)
+        await ctx.message.channel.send(embed=embed)
 
     @checks.have_required_level(3)
     @moderation.command(pass_context=True)
@@ -277,10 +277,10 @@ class Mods:
         :param reason: Reason given for the warn.
         :return case_numer: Return the case and the case number.
         """
-        await self.bot.server_voice_state(user, mute=True)
+        await user.edit(mute=True)
         case = await self.add_action(user=user, action="Mute", by=ctx.message.author, reason=reason)
         embed = await self.get_case_embed(case)
-        await self.bot.send_message(ctx.message.channel, embed=embed)
+        await ctx.message.channel.send(embed=embed)
 
     @checks.have_required_level(3)
     @moderation.command(pass_context=True)
@@ -291,10 +291,10 @@ class Mods:
         :param reason: Reason given for the warn.
         :return case_numer: Return the case and the case number.
         """
-        await self.bot.server_voice_state(user, mute=False)
+        await user.edit(mute=False)
         case = await self.add_action(user=user, action="Unmute", by=ctx.message.author, reason=reason)
         embed = await self.get_case_embed(case)
-        await self.bot.send_message(ctx.message.channel, embed=embed)
+        await ctx.message.channel.send(embed=embed)
 
     @checks.have_required_level(3)
     @moderation.command(pass_context=True)
@@ -305,10 +305,10 @@ class Mods:
         :param reason: Reason given for the warn.
         :return case_numer: Return the case and the case number.
         """
-        await self.bot.server_voice_state(user, deafen=True)
+        await user.edit(deafen=True)
         case = await self.add_action(user=user, action="Deafen", by=ctx.message.author, reason=reason)
         embed = await self.get_case_embed(case)
-        await self.bot.send_message(ctx.message.channel, embed=embed)
+        await ctx.message.channel.send(embed=embed)
 
     @checks.have_required_level(3)
     @moderation.command(pass_context=True)
@@ -319,10 +319,10 @@ class Mods:
         :param reason: Reason given for the warn.
         :return case_numer: Return the case and the case number.
         """
-        await self.bot.server_voice_state(user, deafen=False)
+        await user.edit(deafen=False)
         case = await self.add_action(user=user, action="Undeafen", by=ctx.message.author, reason=reason)
         embed = await self.get_case_embed(case)
-        await self.bot.send_message(ctx.message.channel, embed=embed)
+        await ctx.message.channel.send(embed=embed)
 
     @checks.have_required_level(1)
     @moderation.command(pass_context=True, aliases=["logme", "whatdidido"])
@@ -360,9 +360,9 @@ class Mods:
         :param case: The case number
         """
         try:
-            await self.bot.send_message(ctx.message.channel, embed=await self.get_case_embed(case))
+            await ctx.message.channel.send(embed=await self.get_case_embed(case))
         except InvalidArgument:
-            await self.bot.send_message(ctx.message.channel, "Invalid case number")
+            await ctx.message.channel.send("Invalid case number")
 
     @moderation.group(pass_context=True, no_pm=True, aliases=['purge', 'purgemessages'])
     @checks.have_required_level(3)
@@ -374,10 +374,10 @@ class Mods:
         """
 
         if ctx.invoked_subcommand is None:
-            await self.bot.say('Invalid criteria passed "{0.subcommand_passed}"'.format(ctx))
+            await ctx.message.channel.send('Invalid criteria passed "{0.subcommand_passed}"'.format(ctx))
 
     async def do_removal(self, message, limit, predicate):
-        deleted = await self.bot.purge_from(message.channel, limit=limit, before=message, check=predicate)
+        deleted = await message.channel.purge(limit=limit, before=message, check=predicate)
         spammers = Counter(m.author.display_name for m in deleted)
         messages = ['%s %s removed.' % (len(deleted), 'message was' if len(deleted) == 1 else 'messages were')]
         if len(deleted):
@@ -385,7 +385,7 @@ class Mods:
             spammers = sorted(spammers.items(), key=lambda t: t[1], reverse=True)
             messages.extend(map(lambda t: '**{0[0]}**: {0[1]}'.format(t), spammers))
 
-        await self.bot.say('\n'.join(messages), delete_after=10)
+        await ctx.message.channel.send('\n'.join(messages), delete_after=10)
 
     @remove.command(pass_context=True)
     async def embeds(self, ctx, search=100):
@@ -418,7 +418,7 @@ class Mods:
         The substring must be at least 3 characters long.
         """
         if len(substr) < 3:
-            await self.bot.say('The substring length must be at least 3 characters.')
+            await ctx.message.channel.send('The substring length must be at least 3 characters.')
             return
 
         await self.do_removal(ctx.message, 100, lambda e: substr in e.content)
@@ -478,7 +478,7 @@ class Mods:
         try:
             args = parser.parse_args(shlex.split(args))
         except Exception as e:
-            await self.bot.say(str(e))
+            await ctx.message.channel.send(str(e))
             return
 
         predicates = []
@@ -502,7 +502,7 @@ class Mods:
                     converter = commands.MemberConverter(ctx, u)
                     users.append(converter.convert())
                 except Exception as e:
-                    await self.bot.say(str(e))
+                    await ctx.message.channel.send(str(e))
                     return
 
             predicates.append(lambda m: m.author in users)

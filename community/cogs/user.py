@@ -36,7 +36,7 @@ class Userinfo:
                 except:
                     name = ctx.message.guild.get_member_named(name)
                 if not name:
-                    await self.bot.send_message(ctx.message.channel, self.bot.bot_prefix + 'Could not find user.')
+                    await ctx.message.channel.send(self.bot.bot_prefix + 'Could not find user.')
                     return
             else:
                 name = ctx.message.author
@@ -57,12 +57,12 @@ class Userinfo:
                 em.add_field(name='Join Date', value=name.joined_at.__format__('%A, %d. %B %Y @ %H:%M:%S'))
                 em.set_thumbnail(url=avi)
                 em.set_author(name=name, icon_url='https://i.imgur.com/RHagTDg.png')
-                await self.bot.send_message(ctx.message.channel, embed=em)
+                await ctx.message.channel.send(embed=em)
             else:
                 msg = '**User Info:** ```User ID: %s\nNick: %s\nStatus: %s\nIn Voice: %s\nAccount Created: %s\nJoin Date: %s\nAvatar url:%s```' % (name.id, name.nick, name.status, name.voice_channel, name.created_at.__format__('%A, %d. %B %Y @ %H:%M:%S'), name.joined_at.__format__('%A, %d. %B %Y @ %H:%M:%S'), avi)
-                await self.bot.send_message(ctx.message.channel, self.bot.bot_prefix + msg)
+                await ctx.message.channel.send(self.bot.bot_prefix + msg)
 
-            await self.bot.delete_message(ctx.message)
+            await ctx.message.delete()
 
 
 def setup(bot):

@@ -22,7 +22,7 @@ bot = commons.bot
 async def allCanardsGo():
     for canard in commons.ducks_spawned:
         try:
-            await bot.send_message(canard["channel"], _(random.choice(commons.canards_bye), language=getPref(canard["channel"].guild, "language")))
+            await canard["channel"].send(_(random.choice(commons.canards_bye), language=getPref(canard["channel"].guild, "language")))
             await logwithinfos(canard["channel"], None, "Force-leaving of duck " + str(canard))
         except:
             await logwithinfos(canard["channel"], None, "Force-leaving of duck FAILED " + str(canard))
@@ -51,7 +51,7 @@ async def planifie(channel_obj: discord.Channel = None):
             elif not "channels" in servers[guild.id]:
                 await comm.logwithinfos(guild.default_channel, log_str="Server not configured : " + guild.id)
                 try:
-                    await bot.send_message(guild, "The bot is not configured properly, please check the config or contact Eyesofcreeper#4758 | https://discord.gg/2BksEkV")
+                    await guild.send("The bot is not configured properly, please check the config or contact Eyesofcreeper#4758 | https://discord.gg/2BksEkV")
                     await comm.logwithinfos(guild.default_channel, log_str="Unconfigured message sent...")
                 except:
                     await comm.logwithinfos(guild.default_channel, log_str="Error sending the unconfigured message to the default channel on the server.")
@@ -91,7 +91,7 @@ async def spawn_duck(duck):
             for playerid in servers[duck["channel"].guild.id]["detecteur"][duck["channel"].id]:
                 player = discord.utils.get(duck["channel"].guild.members, id=playerid)
                 try:
-                    await bot.send_message(player, _("There is a duck on #{channel}", prefs.getPref(duck["channel"].guild, "language")).format(**{
+                    await player.send(_("There is a duck on #{channel}", prefs.getPref(duck["channel"].guild, "language")).format(**{
                         "channel": duck["channel"].name
                     }))
                     await comm.logwithinfos(duck["channel"], player, "Sending a duck notification")
@@ -136,7 +136,7 @@ async def spawn_duck(duck):
     else:
         canard_str = corps + "QUAACK"
     try:
-        await bot.send_message(duck["channel"], canard_str, tts=prefs.getPref(duck["channel"].guild, "tts_ducks"))
+        await duck["channel"].send(canard_str, tts=prefs.getPref(duck["channel"].guild, "tts_ducks"))
     except:
         pass
     commons.n_ducks_spawned += 1

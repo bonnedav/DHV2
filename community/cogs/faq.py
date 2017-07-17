@@ -5,17 +5,18 @@
 
 """
 import discord
-from cogs import checks
 from discord.ext import commands
+
+from cogs import checks
 
 
 async def send_embed(bot, message, embed, user=None):
     edit_message = "FAQ"
 
     if user:
-        await bot.send_message(message.channel, content=user.mention, embed=embed)
+        await message.channel.send(content=user.mention, embed=embed)
     else:
-        await bot.send_message(message.channel, content=edit_message, embed=embed)
+        await message.channel.send(content=edit_message, embed=embed)
 
 
 class Faq():
@@ -29,8 +30,8 @@ class Faq():
         """Get info on multiple topics"""
         # await self.bot.delete_message(ctx.message)
         if ctx.invoked_subcommand is None:
-            await self.bot.say('Invalid faq command passed...')
-            await self.bot.say("""```
+            await ctx.message.channel.send('Invalid faq command passed...')
+            await ctx.message.channel.send("""```
 - * <- You are here
 - duckhunt
   |- *

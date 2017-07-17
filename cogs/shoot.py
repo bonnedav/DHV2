@@ -37,9 +37,9 @@ class Shoot:
     async def sendBangMessage(self, message: discord.Message, string: str):
         lag = prefs.getPref(message.guild, "bang_lag")
         if lag > 0:
-            tmp = await self.bot.send_message(message.channel, str(message.author.mention) + " > BANG")
+            tmp = await message.channel.send(str(message.author.mention) + " > BANG")
             await asyncio.sleep(lag)
-            await self.bot.edit_message(tmp, str(message.author.mention) + " > " + string)
+            await tmp.edit(str(message.author.mention) + " > " + string)
 
         else:
             await comm.message_user(message, string)
@@ -179,7 +179,7 @@ class Shoot:
                 if scores.getStat(channel, victim, "life_insurance") > int(time.time()):
                     exp = int(scores.getPlayerLevel(channel, author)["niveau"] / 2)
                     scores.addToStat(channel, victim, "exp", exp)
-                    await self.bot.send_message(channel, str(victim.mention) + _(" > You won {exp} with your life insurance", language).format(**{
+                    await channel.send(str(victim.mention) + _(" > You won {exp} with your life insurance", language).format(**{
                         "exp": exp
                     }))
                     scores.addToStat(channel, victim, "life_insurence_rewards", 1)

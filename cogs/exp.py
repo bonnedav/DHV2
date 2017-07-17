@@ -143,10 +143,10 @@ class Exp:
         current_page = 1
         total_page = 4
 
-        duckstats_message = await self.bot.send_message(send_to, _("Generating duckstats for you, please wait!", language))
-        await self.bot.add_reaction(duckstats_message, first_page_emo)
-        await self.bot.add_reaction(duckstats_message, prev_emo)
-        await self.bot.add_reaction(duckstats_message, next_emo)
+        duckstats_message = await send_to.send(_("Generating duckstats for you, please wait!", language))
+        await duckstats_message.add_reaction(first_page_emo)
+        await duckstats_message.add_reaction(prev_emo)
+        await duckstats_message.add_reaction(next_emo)
 
         while reaction:
             if changed:
@@ -249,7 +249,7 @@ class Exp:
                         embed.add_field(name=_("Effect: wet", language), value=str(self.objectTD(gs, language, "mouille")))
 
                 try:
-                    await self.bot.edit_message(duckstats_message, ":duck:", embed=embed)
+                    await duckstats_message.edit(":duck:", embed=embed)
                 except:
                     commons.logger.exception("Error sending embed, with embed " + str(embed.to_dict()))
                     await comm.message_user(message, _(":warning: Error sending embed, check if the bot have the permission embed_links and try again !", language))
@@ -257,7 +257,14 @@ class Exp:
 
                 changed = False
 
-            res = await self.bot.wait_for_reaction(emoji=[next_emo, prev_emo, first_page_emo], message=duckstats_message, timeout=1200)
+            def is_good_reaction(reaction, user):
+                return reaction.author == ctx.message.author and reaction.message == duckstats_message and reaction.emoji in [next_emo, prev_emo, first_page_emo]
+
+            # La bonne époque : res = await bot.wait_for('reaction_add', emoji=[yes, no], user=ctx.message.author, message=msg, timeout=120)
+            try:
+                res = await self.bot.wait_for('reaction_add', check=is_good_reaction, timeout=1200)
+            except asyncio.TimeoutError:
+                res = None
 
             if res:
                 reaction, user = res
@@ -269,7 +276,7 @@ class Exp:
                     else:
                         current_page += 1
                     try:
-                        await self.bot.remove_reaction(duckstats_message, emoji, user)
+                        await duckstats_message.remove_reaction(emoji, user)
                     except discord.errors.Forbidden:
                         pass
                         # await self.bot.send_message(message.channel, _("I don't have the `manage_messages` permissions, I can't remove reactions. Warn an admin for me, please ;)", language))
@@ -280,7 +287,7 @@ class Exp:
                     else:
                         current_page = total_page
                     try:
-                        await self.bot.remove_reaction(duckstats_message, emoji, user)
+                        await duckstats_message.remove_reaction(emoji, user)
                     except discord.errors.Forbidden:
                         pass
                         # await self.bot.send_message(message.channel, _("I don't have the `manage_messages` permissions, I can't remove reactions. Warn an admin for me, please ;)", language))
@@ -289,14 +296,14 @@ class Exp:
                         changed = True
                         current_page = 1
                     try:
-                        await self.bot.remove_reaction(duckstats_message, emoji, user)
+                        await duckstats_message.remove_reaction(emoji, user)
                     except discord.errors.Forbidden:
                         pass
                         # await self.bot.send_message(message.channel, _("I don't have the `manage_messages` permissions, I can't remove reactions. Warn an admin for me, please ;)", language))
             else:
                 reaction = False
                 try:
-                    await self.bot.delete_message(message)
+                    await message.delete()
                 except:
                     pass
                 return
@@ -316,7 +323,7 @@ class Exp:
                 or not permissions.embed_links \
                 or not permissions.read_message_history:
             if number_of_scores > 200 or number_of_scores < 1:
-                await self.bot.send_message(send_to, _(":x: The maximum number of scores that can be shown on a topscores table is 200.", language))
+                await send_to.send(_(":x: The maximum number of scores that can be shown on a topscores table is 200.", language))
                 return
 
             x = PrettyTable()
@@ -335,7 +342,7 @@ class Exp:
 
             tab = x.get_string(end=number_of_scores, sortby=_("Rank", language))
 
-            await self.bot.send_message(send_to, _(":cocktail: Best scores for #{channel_name} : :cocktail:\n```{table}```", language).format(**{
+            await send_to.send(_(":cocktail: Best scores for #{channel_name} : :cocktail:\n```{table}```", language).format(**{
                 "channel_name": ctx.message.channel.name,
                 "table"       : await comm.paste(tab, "py") if len(tab) >= 1900 else tab
             }), )
@@ -351,10 +358,10 @@ class Exp:
 
             current_page = 1
 
-            message = await self.bot.send_message(send_to, _("Generating topscores for your channel, please wait!", language))
-            await self.bot.add_reaction(message, first_page_emo)
-            await self.bot.add_reaction(message, prev_emo)
-            await self.bot.add_reaction(message, next_emo)
+            message = await send_to.send(_("Generating topscores for your channel, please wait!", language))
+            await message.add_reaction(first_page_emo)
+            await message.add_reaction(prev_emo)
+            await message.add_reaction(next_emo)
 
             while reaction:
                 if changed:
@@ -404,16 +411,24 @@ class Exp:
                         embed.add_field(name=_("Number of ducks killed", language), value=ducks_killed_list, inline=True)
 
                         try:
-                            await self.bot.edit_message(message, ":duck:", embed=embed)
+                            await message.edit(":duck:", embed=embed)
                         except discord.errors.Forbidden:
-                            await self.bot.send_message(send_to, _(":warning: Error sending embed, check if the bot have the permission embed_links and try again !", language))
+                            await send_to.send(_(":warning: Error sending embed, check if the bot have the permission embed_links and try again !", language))
 
                         changed = False
                     else:
                         current_page -= 1
-                        await self.bot.edit_message(message, _("There is nothing more...", language))
+                        await message.edit(_("There is nothing more...", language))
 
-                res = await self.bot.wait_for_reaction(emoji=[next_emo, prev_emo, first_page_emo], message=message, timeout=1200)
+                def is_good_reaction(reaction, user):
+                    return reaction.message == message and reaction.emoji in [next_emo, prev_emo, first_page_emo]
+
+                # La bonne époque : res = await self.bot.wait_for_reaction(emoji=[next_emo, prev_emo, first_page_emo], message=message, timeout=1200)
+                try:
+                    res = await self.bot.wait_for('reaction_add', check=is_good_reaction, timeout=1200)
+                except asyncio.TimeoutError:
+                    res = None
+
 
                 if res:
                     reaction, user = res
@@ -422,29 +437,29 @@ class Exp:
                         changed = True
                         current_page += 1
                         try:
-                            await self.bot.remove_reaction(message, emoji, user)
+                            await message.remove_reaction(emoji, user)
                         except discord.errors.Forbidden:
-                            await self.bot.send_message(send_to, _("I don't have the `manage_messages` permissions, I can't remove reactions. Warn an admin for me, please ;)", language))
+                            await send_to.send(_("I don't have the `manage_messages` permissions, I can't remove reactions. Warn an admin for me, please ;)", language))
                     elif emoji == prev_emo:
                         if current_page > 1:
                             changed = True
                             current_page -= 1
                         try:
-                            await self.bot.remove_reaction(message, emoji, user)
+                            await message.remove_reaction(emoji, user)
                         except discord.errors.Forbidden:
-                            await self.bot.send_message(send_to, _("I don't have the `manage_messages` permissions, I can't remove reactions. Warn an admin for me, please ;)", language))
+                            await send_to.send(_("I don't have the `manage_messages` permissions, I can't remove reactions. Warn an admin for me, please ;)", language))
                     elif emoji == first_page_emo:
                         if current_page > 1:
                             changed = True
                             current_page = 1
                         try:
-                            await self.bot.remove_reaction(message, emoji, user)
+                            await message.remove_reaction(emoji, user)
                         except discord.errors.Forbidden:
-                            await self.bot.send_message(send_to, _("I don't have the `manage_messages` permissions, I can't remove reactions. Warn an admin for me, please ;)", language))
+                            await send_to.send(_("I don't have the `manage_messages` permissions, I can't remove reactions. Warn an admin for me, please ;)", language))
                 else:
                     reaction = False
                     try:
-                        await self.bot.delete_message(message)
+                        await message.delete()
                     except:
                         pass
 
@@ -720,7 +735,7 @@ class Exp:
             }), forcePv=True)
 
         try:
-            await self.bot.delete_message(ctx.message)
+            await ctx.message.delete()
         except discord.Forbidden:
             await comm.logwithinfos_ctx(ctx, "Error deleting command : forbidden")
         except discord.NotFound:
@@ -807,24 +822,24 @@ class Exp:
         await comm.message_user(message, _(":money_with_wings: You prepare a mechanical duck on the channel for 50 exp. That's bad, but so funny !", language), forcePv=True)
 
         try:
-            self.bot.delete_message(ctx.message)
+            await ctx.message.delete()
         except discord.Forbidden:
             await comm.logwithinfos_ctx(ctx, "Error deleting command : forbidden")
         await asyncio.sleep(90)
         try:
             if prefs.getPref(message.guild, "emoji_ducks"):
                 if prefs.getPref(message.guild, "randomize_mechanical_ducks") == 0:
-                    await self.bot.send_message(message.channel, prefs.getPref(message.guild, "emoji_used") + _(" < *BZAACK*", language))
+                    await message.channel.send(prefs.getPref(message.guild, "emoji_used") + _(" < *BZAACK*", language))
                 else:
-                    await self.bot.send_message(message.channel, _(prefs.getPref(message.guild, "emoji_used") + " < " + _(random.choice(commons.canards_cri), language)))
+                    await message.channel.send(_(prefs.getPref(message.guild, "emoji_used") + " < " + _(random.choice(commons.canards_cri), language)))
             else:
 
                 if prefs.getPref(message.guild, "randomize_mechanical_ducks") == 0:
-                    await self.bot.send_message(message.channel, _("-_-'\`'°-_-.-'\`'° %__%   *BZAACK*", language))
+                    await message.channel.send(_("-_-'\`'°-_-.-'\`'° %__%   *BZAACK*", language))
                 elif prefs.getPref(message.guild, "randomize_mechanical_ducks") == 1:
-                    await self.bot.send_message(message.channel, "-_-'\`'°-_-.-'\`'° %__%    " + _(random.choice(commons.canards_cri), language=language))
+                    await message.channel.send("-_-'\`'°-_-.-'\`'° %__%    " + _(random.choice(commons.canards_cri), language=language))
                 else:
-                    await self.bot.send_message(message.channel, random.choice(commons.canards_trace) + "  " + random.choice(commons.canards_portrait) + "  " + _(random.choice(commons.canards_cri), language=language))  # ASSHOLE ^^
+                    await message.channel.send(random.choice(commons.canards_trace) + "  " + random.choice(commons.canards_portrait) + "  " + _(random.choice(commons.canards_cri), language=language))  # ASSHOLE ^^
 
         except:
             pass

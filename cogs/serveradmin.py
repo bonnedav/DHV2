@@ -197,7 +197,7 @@ class ServerAdmin:
             def not_pinned(m):
                 return not m.pinned and not m.timestamp < weeks
 
-            deleted = await self.bot.purge_from(ctx.message.channel, limit=number, check=not_pinned)
+            deleted = await ctx.message.channel.purge(limit=number, check=not_pinned)
             await comm.message_user(ctx.message, _("{deleted} message(s) deleted", language).format(**{
                 "deleted": len(deleted)
             }))
@@ -215,7 +215,7 @@ class ServerAdmin:
             def check(m):
                 return remove in m.content and not m.timestamp < weeks
 
-            deleted = await ctx.bot.purge_from(ctx.message.channel, limit=100, check=check)
+            deleted = await ctx.message.channel.purge(limit=100, check=check)
             await comm.message_user(ctx.message, _("{deleted} message(s) deleted", language).format(**{
                 "deleted": len(deleted)
             }))

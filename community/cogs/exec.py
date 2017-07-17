@@ -3,6 +3,7 @@
 
 '''Module for an embeded python interpreter. More or less the same as the debugger module but with embeds.'''
 
+import asyncio
 import collections
 import inspect
 import io
@@ -100,19 +101,22 @@ class EmbedShell:
                     color=15746887,
                     description="**Error**: "
                                 "_Shell is already running in channel._")
-            await self.bot.say(embed=error_embed)
+            await ctx.message.channel.send(embed=error_embed)
             return
 
-        shell = await self.bot.say(embed=embed)
+        shell = await ctx.message.channel.send(embed=embed)
 
         self.repl_sessions[session] = shell
         self.repl_embeds[shell] = embed
 
         while True:
-            response = await self.bot.wait_for_message(
-                    author=ctx.message.author,
-                    channel=ctx.message.channel,
-                    check=lambda m: m.content.startswith('`'))
+            def is_good_message(m):
+                return m.author == ctx.message.author and m.channel == ctx.message.channel and m.content.startswith('`')
+
+            try:
+                response = await self.bot.wait_for('message', check=is_good_message)
+            except asyncio.TimeoutError:
+                response = None
 
             cleaned = self.cleanup_code(response.content)
             shell = self.repl_sessions[session]
@@ -123,7 +127,7 @@ class EmbedShell:
 
             # Self Bot Method
             if shell_check is None:
-                new_shell = await self.bot.say(embed=self.repl_embeds[shell])
+                new_shell = await ctx.message.channel.send(embed=self.repl_embeds[shell])
 
                 self.repl_sessions[session] = new_shell
 
@@ -136,7 +140,7 @@ class EmbedShell:
             del shell_check
 
             try:
-                await self.bot.delete_message(response)
+                await response.delete()
             except discord.Forbidden:
                 pass
 
@@ -168,8 +172,7 @@ class EmbedShell:
                         inline=False)
 
                 try:
-                    await self.bot.edit_message(
-                            self.repl_sessions[session],
+                    await self.repl_sessions[session].edit(
                             embed=self.repl_embeds[shell])
                 except:
                     pass
@@ -212,8 +215,7 @@ class EmbedShell:
                             inline=False)
 
                 try:
-                    await self.bot.edit_message(
-                            self.repl_sessions[session],
+                    await self.repl_sessions[session].edit(
                             embed=self.repl_embeds[shell])
                 except:
                     pass
@@ -265,8 +267,7 @@ class EmbedShell:
                                         haste_url),
                                 inline=False)
 
-                        await self.bot.edit_message(
-                                self.repl_sessions[session],
+                        await self.repl_sessions[session].edit(
                                 embed=self.repl_embeds[shell])
                     else:
                         self.repl_embeds[shell].add_field(
@@ -274,8 +275,7 @@ class EmbedShell:
                                 value=fmt,
                                 inline=False)
 
-                        await self.bot.edit_message(
-                                self.repl_sessions[session],
+                        await self.repl_sessions[session].edit(
                                 embed=self.repl_embeds[shell])
                 else:
                     self.repl_embeds[shell].add_field(
@@ -283,8 +283,7 @@ class EmbedShell:
                             value="`Empty response, assumed successful.`",
                             inline=False)
 
-                    await self.bot.edit_message(
-                            self.repl_sessions[session],
+                    await self.repl_sessions[session].edit(
                             embed=self.repl_embeds[shell])
 
             except discord.Forbidden:
@@ -295,7 +294,7 @@ class EmbedShell:
                     error_embed = discord.Embed(
                             color=15746887,
                             description='**Error**: _{}_'.format(err))
-                    await self.bot.say(embed=error_embed)
+                    await ctx.message.channel.send(embed=error_embed)
                 except:
                     pass
 
@@ -313,7 +312,7 @@ class EmbedShell:
                 error_embed = discord.Embed(
                         color=15746887,
                         description="**Error**: _No shell running in channel._")
-                await self.bot.say(embed=error_embed)
+                await ctx.message.channel.send(embed=error_embed)
             except:
                 pass
             return
@@ -321,13 +320,13 @@ class EmbedShell:
         shell = self.repl_sessions[session]
         embed = self.repl_embeds[shell]
 
-        await self.bot.delete_message(ctx.message)
+        await ctx.message.delete()
         try:
-            await self.bot.delete_message(shell)
+            await shell.delete()
         except discord.errors.NotFound:
             pass
         try:
-            new_shell = await self.bot.say(embed=embed)
+            new_shell = await ctx.message.channel.send(embed=embed)
         except:
             pass
 
@@ -351,7 +350,7 @@ class EmbedShell:
                 error_embed = discord.Embed(
                         color=15746887,
                         description="**Error**: _No shell running in channel._")
-                await self.bot.say(embed=error_embed)
+                await ctx.message.channel.send(embed=error_embed)
             except:
                 pass
             return
@@ -361,10 +360,9 @@ class EmbedShell:
         self.repl_embeds[shell].color = discord.Color.default()
         self.repl_embeds[shell].clear_fields()
 
-        await self.bot.delete_message(ctx.message)
+        await ctx.message.delete()
         try:
-            await self.bot.edit_message(
-                    shell,
+            await self.repl_sessions[session].edit(
                     embed=self.repl_embeds[shell])
         except:
             pass

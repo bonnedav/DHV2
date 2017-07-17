@@ -112,10 +112,10 @@ def addToStat(channel, player, stat, value, announce=True):
         embed.add_field(name=_("Exp points", language), value=str(getStat(channel, player, "exp")))
         embed.set_footer(text='DuckHunt V2', icon_url='http://api-d.com/snaps/2016-11-19_10-38-54-q1smxz4xyq.jpg')
         try:
-            commons.bot.loop.create_task(commons.bot.send_message(channel, embed=embed))
+            commons.bot.loop.create_task(channel.send(embed=embed))
         except:
             commons.logger.exception("error sending embed, with embed " + str(embed.to_dict()))
-            commons.bot.loop.create_task(commons.bot.send_message(channel, _(":warning: Error sending embed, check if the bot have the permission embed_links and try again !", language)))
+            commons.bot.loop.create_task(channel.send(_(":warning: Error sending embed, check if the bot have the permission embed_links and try again !", language)))
 
 
 def setStat(channel, player, stat, value):

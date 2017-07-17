@@ -22,7 +22,7 @@ class WhoPlays:
     async def whoplays(self, ctx, *, game):
         """Shows a list of all the people playing a game."""
         if len(game) <= 2:
-            await self.bot.say("You need at least 3 characters.")
+            await ctx.message.channel.send("You need at least 3 characters.")
             return
 
         user = ctx.message.author
@@ -45,7 +45,7 @@ class WhoPlays:
                                                          member.game.name)
 
         if playing_game == "":
-            await self.bot.say("No one is playing that game.")
+            await ctx.message.channel.send("No one is playing that game.")
         else:
             msg = playing_game
             em = discord.Embed(description=msg, colour=user.colour)
@@ -56,7 +56,7 @@ class WhoPlays:
             text = "These are the people who are playing"
             text += "{}:\n{}".format(game, showing)
             em.set_author(name=text)
-            await self.bot.say(embed=em)
+            await ctx.message.channel.send(embed=em)
 
     @checks.have_required_level(1)
     @commands.command(pass_context=True, no_pm=True)
@@ -83,7 +83,7 @@ class WhoPlays:
                              reverse=True)
 
         if not freq_list:
-            await self.bot.say("Surprisingly, no one is playing anything.")
+            await ctx.message.channel.send("Surprisingly, no one is playing anything.")
         else:
             # create display
             msg = ""
@@ -94,7 +94,7 @@ class WhoPlays:
 
             em = discord.Embed(description=msg, colour=user.colour)
             em.set_author(name="These are the server's most played games at the moment:")
-            await self.bot.say(embed=em)
+            await ctx.message.channel.send(embed=em)
 
 
 def setup(bot):

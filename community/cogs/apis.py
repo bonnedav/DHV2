@@ -10,8 +10,9 @@ from urllib.parse import urlparse
 
 import discord
 import requests
-from cogs import checks
 from discord.ext import commands
+
+from cogs import checks
 
 
 async def json_to_embed(parsed_json: dict, ignore_keys: list = list()):
@@ -41,8 +42,8 @@ class Httpcat():
         embed.title = "Error " + err
         embed.url = "https://http.cat/" + err
         embed.set_image(url="https://http.cat/" + err)
-        await self.bot.say(embed=embed)
-        await self.bot.delete_message(ctx.message)
+        await ctx.message.channel.send(embed=embed)
+        await ctx.message.delete()
 
     @checks.have_required_level(1)
     @commands.command(pass_context=True, aliases=["avatar"])
@@ -53,8 +54,8 @@ class Httpcat():
         embed.title = "Avatar of " + avatar
         embed.url = "https://api.adorable.io/avatars/285/" + avatar
         embed.set_image(url="https://api.adorable.io/avatars/285/" + avatar)
-        await self.bot.say(embed=embed)
-        await self.bot.delete_message(ctx.message)
+        await ctx.message.channel.send(embed=embed)
+        await ctx.message.delete()
 
     @checks.have_required_level(1)
     @commands.command(pass_context=True, aliases=["chucknorris", "cn"])
@@ -67,8 +68,8 @@ class Httpcat():
         embed.description = data["value"]
         embed.url = data["url"]
         # embed.set_image(url=data["icon_url"])
-        await self.bot.say(embed=embed)
-        await self.bot.delete_message(ctx.message)
+        await ctx.message.channel.send(embed=embed)
+        await ctx.message.delete()
 
     @checks.have_required_level(1)
     @commands.command(pass_context=True, aliases=["donald", "dt", "donaldtrump"])
@@ -80,8 +81,8 @@ class Httpcat():
         embed.title = "Donald Trump said..."
         embed.url = data["_embedded"]["source"][0]["url"]
         embed.description = data["value"]
-        await self.bot.say(embed=embed)
-        await self.bot.delete_message(ctx.message)
+        await ctx.message.channel.send(embed=embed)
+        await ctx.message.delete()
 
     @checks.have_required_level(1)
     @commands.command(pass_context=True)
@@ -97,8 +98,8 @@ class Httpcat():
         # embed.url = str(uri.geturl())
         embed.url = "https://" + company_website
         embed.set_image(url="https://logo.clearbit.com/" + domain)
-        await self.bot.say(embed=embed)
-        await self.bot.delete_message(ctx.message)
+        await ctx.message.channel.send(embed=embed)
+        await ctx.message.delete()
 
     @checks.have_required_level(2)
     @commands.command(pass_context=True, aliases=["lang", "detectlanguage"])
@@ -113,10 +114,10 @@ class Httpcat():
             embed.title = "Language detection"
             embed.description = text
             embed.set_image(url="https://flagpedia.net/data/flags/big/" + data["results"][0]["language_code"] + ".png")
-            await self.bot.say(embed=embed)
-            await self.bot.delete_message(ctx.message)
+            await ctx.message.channel.send(embed=embed)
+            await ctx.message.delete()
         else:
-            await self.bot.say("Language detection failed")
+            await ctx.message.channel.send("Language detection failed")
 
 
 def setup(bot):

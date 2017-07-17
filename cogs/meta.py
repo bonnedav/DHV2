@@ -80,7 +80,7 @@ class Meta:
     #     perms.embed_links = True
     #     perms.read_message_history = True
     #     perms.attach_files = True
-    #     await self.bot.say(msg + discord.utils.oauth_url(self.bot.client_id, perms))
+    #     await ctx.message.channel.send(msg + discord.utils.oauth_url(self.bot.client_id, perms))
 
     # @commands.command(pass_context=True, no_pm=True)
     # @checks.admin_or_permissions(manage_server=True)
@@ -94,25 +94,25 @@ class Meta:
     #     try:
     #         await self.bot.leave_server(server)
     #     except:
-    #         await self.bot.say('Could not leave..')
+    #         await ctx.message.channel.send('Could not leave..')
 
     @commands.command(pass_context=True)
     async def uptime(self, ctx):
         """Tells you how long the bot has been up for."""
         language = getPref(ctx.message.guild, "language")
-        await self.bot.say(_('Uptime: **{}**', language).format(self.get_bot_uptime()))
+        await ctx.message.channel.send(_('Uptime: **{}**', language).format(self.get_bot_uptime()))
 
     @commands.command(rest_is_raw=True, hidden=True)
     @checks.is_owner()
-    async def echo(self, *, content):
-        await self.bot.say(content)
+    async def echo(self, ctx, *, content):
+        await ctx.message.channel.send(content)
 
     @commands.command(hidden=True)
     @checks.is_owner()
-    async def commandstats(self):
+    async def commandstats(self, ctx):
         msg = 'Since startup, {} commands have been used.\n{}'
         counter = self.bot.commands_used
-        await self.bot.say(msg.format(sum(counter.values()), counter))
+        await ctx.message.channel.send(msg.format(sum(counter.values()), counter))
 
     @commands.command(pass_context=True)
     async def stats(self, ctx):
@@ -197,7 +197,7 @@ class Meta:
         embed.set_footer(text=_('Python version : ', language) + str(sys.version), icon_url='http://cloudpassage.github.io/halo-toolbox/images/python_icon.png')
 
         try:
-            await self.bot.say(embed=embed)
+            await ctx.message.channel.send(embed=embed)
         except:
             commons.logger.exception("error sending embed, with embed " + str(embed.to_dict()))
             await comm.message_user(ctx.message, _(":warning: Error sending embed, check if the bot have the permission embed_links and try again !", language))
