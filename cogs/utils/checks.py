@@ -44,7 +44,7 @@ def is_activated_check(channel):
     servers = prefs.JSONloadFromDisk("channels.json")
 
     try:
-        if channel.id in servers[channel.guild.id]["channels"]:
+        if str(channel.id) in servers[str(channel.guild.id)]["channels"]:
             activated = True
         else:
             activated = False

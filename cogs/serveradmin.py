@@ -168,10 +168,10 @@ class ServerAdmin:
         !claimserver"""
         language = prefs.getPref(ctx.message.guild, "language")
         servers = prefs.JSONloadFromDisk("channels.json")
-        if not ctx.message.guild.id in servers:
-            servers[ctx.message.guild.id] = {}
-        if not "admins" in servers[ctx.message.guild.id] or not servers[ctx.message.guild.id]["admins"]:
-            servers[ctx.message.guild.id]["admins"] = [ctx.message.author.id]
+        if not str(ctx.message.guild.id) in servers:
+            servers[str(ctx.message.guild.id)] = {}
+        if not "admins" in servers[str(ctx.message.guild.id)] or not servers[str(ctx.message.guild.id)]["admins"]:
+            servers[str(ctx.message.guild.id)]["admins"] = [str(ctx.message.author.id)]
             await comm.logwithinfos_ctx(ctx, "Adding admin {admin_name} | {admin_id} to configuration file for server {server_name} | {server_id}.".format(**{
                 "admin_name" : ctx.message.author.name,
                 "admin_id"   : ctx.message.author.id,
@@ -183,44 +183,6 @@ class ServerAdmin:
             await comm.logwithinfos_ctx(ctx, "An admin already exist")
             await comm.message_user(ctx.message, _(":x: An admin exist on this server ! Try !add_admin", language))
         prefs.JSONsaveToDisk(servers, "channels.json")
-
-    @commands.command(pass_context=True)
-    @checks.is_admin()
-    async def purgemessages(self, ctx, number: int = 500):
-        """Delete last messages in the channel
-        !purgemessages <number of messages>"""
-        language = prefs.getPref(ctx.message.guild, "language")
-        import datetime
-        weeks = datetime.datetime.now() - datetime.timedelta(days=13)
-
-        if ctx.message.channel.permissions_for(ctx.message.guild.me).manage_messages:
-            def not_pinned(m):
-                return not m.pinned and not m.timestamp < weeks
-
-            deleted = await ctx.message.channel.purge(limit=number, check=not_pinned)
-            await comm.message_user(ctx.message, _("{deleted} message(s) deleted", language).format(**{
-                "deleted": len(deleted)
-            }))
-        else:
-            await comm.message_user(ctx.message, _("0 message(s) deleted : permission denied", language))
-
-    @commands.command(pass_context=True)
-    @checks.is_admin()
-    async def purge_messages_criteria(self, ctx, *, remove: str):
-        language = prefs.getPref(ctx.message.guild, "language")
-        import datetime
-        weeks = datetime.datetime.now() - datetime.timedelta(days=13)
-
-        if ctx.message.channel.permissions_for(ctx.message.guild.me).manage_messages:
-            def check(m):
-                return remove in m.content and not m.timestamp < weeks
-
-            deleted = await ctx.message.channel.purge(limit=100, check=check)
-            await comm.message_user(ctx.message, _("{deleted} message(s) deleted", language).format(**{
-                "deleted": len(deleted)
-            }))
-        else:
-            await comm.message_user(ctx.message, _("0 message(s) deleted : permission denied", language))
 
     @commands.command(pass_context=True)
     @checks.is_admin()

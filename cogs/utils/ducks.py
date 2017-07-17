@@ -42,14 +42,14 @@ async def planifie(channel_obj: discord.ChannelType = None):
             multiplicator = 1
         servers = prefs.JSONloadFromDisk("channels.json")
         for server_ in list(servers.keys()):
-            guild = bot.get_guild(str(server_))
+            guild = bot.get_guild(int(server_))
             if not guild:
                 logger.debug("Non-existant server : " + str(server_))
                 servers.pop(server_)
                 scores.delServerPlayers(sid=server_)
 
-            elif not "channels" in servers[guild.id]:
-                await comm.logwithinfos(guild.default_channel, log_str="Server not configured : " + guild.id)
+            elif not "channels" in servers[str(guild.id)]:
+                await comm.logwithinfos(guild.default_channel, log_str="Server not configured : " + str(guild.id))
                 try:
                     await guild.send("The bot is not configured properly, please check the config or contact Eyesofcreeper#4758 | https://discord.gg/2BksEkV")
                     await comm.logwithinfos(guild.default_channel, log_str="Unconfigured message sent...")
@@ -57,8 +57,8 @@ async def planifie(channel_obj: discord.ChannelType = None):
                     await comm.logwithinfos(guild.default_channel, log_str="Error sending the unconfigured message to the default channel on the server.")
 
             else:
-                for channel_ in servers[guild.id]["channels"]:
-                    channel = guild.get_channel(str(channel_))
+                for channel_ in servers[str(guild.id)]["channels"]:
+                    channel = guild.get_channel(int(channel_))
                     if channel:
                         permissions = channel.permissions_for(guild.me)
                         if permissions.read_messages and permissions.send_messages:

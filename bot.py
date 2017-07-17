@@ -49,7 +49,7 @@ HOUR = MINUTE * 60
 DAY = HOUR * 24
 
 def prefix(bot, message):
-    p = prefs.getPref(message.guild, "prefix")
+    p = prefs.getPref(message.channel.guild, "prefix")
     return ["DuckHunt", "duckhunt", "dh!", "dh"] + [p]
 
 
@@ -90,7 +90,7 @@ async def on_command_error(ctx, error):
             await msg.add_reaction(no)
 
             def is_good_reaction(reaction, user):
-                return reaction.author == ctx.message.author and reaction.message == msg and reaction.emoji in [yes, no]
+                return user == ctx.message.author and reaction.message == msg and reaction.emoji in [yes, no]
 
             # La bonne époque : res = await bot.wait_for('reaction_add', emoji=[yes, no], user=ctx.message.author, message=msg, timeout=120)
             try:
@@ -193,7 +193,7 @@ async def mainloop():
         await bot.wait_until_ready()
         planday = 0
         last_iter = int(time.time())
-        while not bot.is_closed:
+        while not bot.is_closed():
             now = int(last_iter + 1)
             thisDay = now - (now % 86400)
             seconds_left = int(86400 - (now - thisDay))
@@ -218,8 +218,8 @@ async def mainloop():
                 # 00:00 |-----==========---------| 23:59 (= quand les canards dorment)
                 # dans ce cas, il faut juste modifier la valeur de seconds_left pour enlever le nombre d'heure
                 # (en seconde) afin d'augmenter la probabilité qu'un canard apparaisse pendant le reste de la journée
-                sdstart = prefs.getPref(channel.server, "sleeping_ducks_start")
-                sdstop = prefs.getPref(channel.server, "sleeping_ducks_stop")
+                sdstart = prefs.getPref(channel.guild, "sleeping_ducks_start")
+                sdstop = prefs.getPref(channel.guild, "sleeping_ducks_stop")
                 currently_sleeping = False
 
                 if sdstart != sdstop:  # Dans ce cas, les canards dorment peut-etre!
@@ -257,14 +257,14 @@ async def mainloop():
                         pass
 
             for canard in commons.ducks_spawned:
-                if int(canard["time"]) + int(prefs.getPref(canard["channel"].server, "time_before_ducks_leave")) + commons.bread[canard["channel"]] < int(now):  # Canard qui se barre
+                if int(canard["time"]) + int(prefs.getPref(canard["channel"].guild, "time_before_ducks_leave")) + commons.bread[canard["channel"]] < int(now):  # Canard qui se barre
                     await comm.logwithinfos(canard["channel"], None, "Duck of {time} stayed for too long. (it's {now}, and it should have stayed until {shouldwaitto}).".format(**{
                         "time"        : canard["time"],
                         "now"         : now,
-                        "shouldwaitto": str(int(canard["time"] + prefs.getPref(canard["channel"].server, "time_before_ducks_leave"))) + (" + " + str(commons.bread[canard["channel"]]) if commons.bread[canard["channel"]] != 0 else "")
+                        "shouldwaitto": str(int(canard["time"] + prefs.getPref(canard["channel"].guild, "time_before_ducks_leave"))) + (" + " + str(commons.bread[canard["channel"]]) if commons.bread[canard["channel"]] != 0 else "")
                     }))
                     try:
-                        asyncio.ensure_future(canard["channel"].send(_(random.choice(commons.canards_bye), language=prefs.getPref(canard["channel"].server, "language"))))
+                        asyncio.ensure_future(canard["channel"].send(_(random.choice(commons.canards_bye), language=prefs.getPref(canard["channel"].guild, "language"))))
                     except:
                         pass
                     try:

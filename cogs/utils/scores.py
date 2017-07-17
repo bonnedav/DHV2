@@ -18,7 +18,7 @@ sql = db.cursor(buffered=True, dictionary=True)
 
 
 def getChannelId(channel):
-    server = channel.server
+    server = channel.guild
 
     def getit():
         sql.execute("SELECT id FROM channels WHERE server = %(server)s AND channel = %(channel)s", {
@@ -66,7 +66,7 @@ def getChannelPlayers(channel, columns=None, match_id=None):
     cond = ''
     if match_id:
         data.update({
-            'match_id': match_id
+            'match_id': str(match_id)
         })
         cond = " AND id_ = %(match_id)s"
 
@@ -78,14 +78,14 @@ def getChannelPlayers(channel, columns=None, match_id=None):
 
 
 def addToStat(channel, player, stat, value, announce=True):
-    cond = stat == "exp" and prefs.getPref(channel.server, "announce_level_up") and announce
+    cond = stat == "exp" and prefs.getPref(channel.guild, "announce_level_up") and announce
     if cond:
         ancien_niveau = getPlayerLevel(channel, player)
 
     setStat(channel, player, stat, int(getStat(channel, player, stat)) + value)
 
     if cond:
-        language = prefs.getPref(channel.server, "language")
+        language = prefs.getPref(channel.guild, "language")
 
         embed = discord.Embed(description=_("Level of {player} on #{channel}", language).format(**{
             "player" : player.name,
@@ -131,7 +131,7 @@ def setStat(channel, player, stat, value):
 
 def getStat(channel, player, stat, default=0):
     try:
-        userDict = getChannelPlayers(channel, columns=[stat], match_id=player.id)[0]
+        userDict = getChannelPlayers(channel, columns=[stat], match_id=str(player.id))[0]
         if userDict[stat] is not None:
             return userDict[stat]
         else:
@@ -197,7 +197,7 @@ def getPlayerLevelWithExp(exp):
 
 def delServerPlayers(server=None, sid=None):
     if not sid:
-        sid = server.id
+        sid = str(server.id)
 
     sql.execute("SELECT * FROM channels WHERE server = %(server)s", {
         'server': sid

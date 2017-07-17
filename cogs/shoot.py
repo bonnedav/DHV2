@@ -39,7 +39,7 @@ class Shoot:
         if lag > 0:
             tmp = await message.channel.send(str(message.author.mention) + " > BANG")
             await asyncio.sleep(lag)
-            await tmp.edit(str(message.author.mention) + " > " + string)
+            await tmp.edit(content=str(message.author.mention) + " > " + string)
 
         else:
             await comm.message_user(message, string)
