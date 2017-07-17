@@ -90,8 +90,7 @@ async def on_command_error(ctx, error):
             await msg.add_reaction(no)
 
             def is_good_reaction(reaction, user):
-
-                return reaction.message == msg  # and reaction.emoji in [yes, no]
+                return user == ctx.message.author and reaction.message == msg and reaction.emoji in [yes, no]
 
             # La bonne époque : res = await bot.wait_for('reaction_add', emoji=[yes, no], user=ctx.message.author, message=msg, timeout=120)
             try:
