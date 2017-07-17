@@ -41,7 +41,7 @@ def init():
     n_ducks_spawned = 0
 
     global blocked_users
-    blocked_users = ["301780614166609920", "281865584784703489", "301780485254807552"]
+    blocked_users = [301780614166609920, 281865584784703489, 301780485254807552]
 
     # Settings, config & translation
 
@@ -51,7 +51,7 @@ def init():
         credentials = json.load(f)
 
     lang = "en_EN"  # Language specified here is for console messages, everything that is not sent to a server
-    owners = ["138751484517941259", '94822638991454208']
+    owners = [138751484517941259, 94822638991454208]
     support_server = [195260081036591104]
 
     class Domain:  # gettext config | http://stackoverflow.com/a/38004947/3738545
