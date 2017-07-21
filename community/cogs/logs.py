@@ -12,7 +12,7 @@ import discord
 class Logs:
     def __init__(self, bot):
         self.bot = bot
-        self.channel = "297750761365045249"
+        self.channel = 297750761365045249
 
     async def on_member_join(self, member):
         channel = self.bot.get_channel(self.channel)

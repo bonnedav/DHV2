@@ -71,7 +71,7 @@ class Mods:
         if announce:
 
             embed = await self.get_case_embed(current_case)
-            await self.bot.get_channel("317432206920515597").send(embed=embed)
+            await self.bot.get_channel(317432206920515597).send(embed=embed)
 
         return current_case
 

@@ -35,7 +35,7 @@ async def prepare_resp(resp_payload, code=200):
 
 
 async def list_members(server_id, channel_id):
-    server = commons.bot.get_server(server_id)
+    server = commons.bot.get_guild(server_id)
 
     if server:
         channel = server.get_channel(channel_id)
@@ -128,7 +128,7 @@ async def guilds(ctx: HTTPRequestContext):
 async def guild(ctx: HTTPRequestContext, server_id: str):
     await commons.bot.wait_until_ready()
 
-    server = commons.bot.get_server(server_id)
+    server = commons.bot.get_guild(server_id)
 
     if server:
         player_count = 0
@@ -202,7 +202,7 @@ async def guild_channel(ctx: HTTPRequestContext, server_id: str, channel_id: str
 @api.route("/guilds/([^/]+)/channels/([^/]+)/users/([^/]+)/?")  # /guilds/server_id/channels/channel_id/users/user_id
 async def guild_channel_user(ctx: HTTPRequestContext, server_id: str, channel_id: str, user_id: str):
     await commons.bot.wait_until_ready()
-    server = commons.bot.get_server(server_id)
+    server = commons.bot.get_guild(server_id)
 
     if server:
         channel = server.get_channel(channel_id)

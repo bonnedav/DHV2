@@ -31,7 +31,7 @@ def is_admin_check(message):
 
 
 def is_player_check(member, channel=None):
-    if isinstance(member, discord.Member):
+    if isinstance(member, discord.Member) or isinstance(member, discord.User): # Le fix aux petits oignons 👌
         try:
             member = scores.getChannelPlayers(channel, columns=['shoots_fired'], match_id=member.id)[0]
         except IndexError:
